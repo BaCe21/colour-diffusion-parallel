@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Format Files 30.03.2024\studia\pk\PRIR\colour-diffusion-parallel\build\CMakeFiles\1edfaf0f6b03cd78a373a76b61c2325a\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{4B23331D-2D59-3C85-A6B2-44132E589375}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
