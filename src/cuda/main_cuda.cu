@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 
     int h = 0;
     cudaMemcpy(&h, d, sizeof(int), cudaMemcpyDeviceToHost);
-    std::cout << "Hello CUDA — kernel wrote: " << h << std::endl;
+    std::cout << "Hello CUDA: kernel wrote: " << h << std::endl;
 
     cudaFree(d);
     return 0;
