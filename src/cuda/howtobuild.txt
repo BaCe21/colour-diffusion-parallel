@@ -1,0 +1,1 @@
+nvcc -allow-unsupported-compiler -std=c++17 -Xcompiler="/std:c++17" -ccbin "D:\Nowy folder\VS\VC\Tools\MSVC\14.50.35717\bin\Hostx64\x64" diffusion_cuda.cu -o diffusion_cuda.exe
