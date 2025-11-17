@@ -1,8 +1,3 @@
-// src/openmp/main_openmp.cpp
-// Simple 2D color diffusion (prototype) using OpenMP.
-// Writes final frame(s) as binary PPM (P6).
-// Build: (via CMake) or compile manually with: cl /O2 /openmp main_openmp.cpp
-
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -34,11 +29,10 @@ int main(int argc, char** argv) {
     // Default parameters
     int N = 1000;
     int iters = 500;
-    int save_interval = 0; // 0 = only final
-    int threads = 0;       // 0 => use OMP env or default
-    int stencil = 5;       // 5 or 9
+    int save_interval = 0; 
+    int threads = 0;     
+    int stencil = 5;    
 
-    // parse args simple: --size, --iters, --save, --threads, --stencil
     for (int i=1;i<argc;i++){
         if (strcmp(argv[i], "--size")==0 && i+1<argc) N = atoi(argv[++i]);
         else if (strcmp(argv[i], "--iters")==0 && i+1<argc) iters = atoi(argv[++i]);

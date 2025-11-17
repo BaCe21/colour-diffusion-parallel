@@ -22,6 +22,9 @@
 	"dependencies" : 
 	[
 		{
+			"id" : "cuda_exec::@6890427a1f51a3e7e1df"
+		},
+		{
 			"id" : "openmp_exec::@6890427a1f51a3e7e1df"
 		},
 		{
@@ -29,9 +32,6 @@
 		},
 		{
 			"id" : "mpi_exec::@6890427a1f51a3e7e1df"
-		},
-		{
-			"id" : "cuda_exec::@6890427a1f51a3e7e1df"
 		}
 	],
 	"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
@@ -40,13 +40,13 @@
 	"orderDependencies" : 
 	[
 		{
+			"id" : "cuda_exec::@6890427a1f51a3e7e1df"
+		},
+		{
 			"id" : "openmp_exec::@6890427a1f51a3e7e1df"
 		},
 		{
 			"id" : "mpi_exec::@6890427a1f51a3e7e1df"
-		},
-		{
-			"id" : "cuda_exec::@6890427a1f51a3e7e1df"
 		}
 	],
 	"paths" : 

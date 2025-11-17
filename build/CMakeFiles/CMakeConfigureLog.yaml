@@ -67884,3 +67884,507 @@ events:
       Microsoft (R) Incremental Linker Version 14.44.35219.0
       Copyright (C) Microsoft Corporation.  All rights reserved.
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1447 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1491 (_MPI_try_staged_settings)"
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1814 (_MPI_check_lang_works)"
+      - "CMakeLists.txt:7 (find_package)"
+    description: "The MPI test test_mpi for C in mode normal"
+    directories:
+      source: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-78v1cc"
+      binary: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-78v1cc"
+    cmakeVariables:
+      CMAKE_CUDA_ARCHITECTURES: "75"
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
+      CMAKE_C_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "MPI_RESULT_C_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-78v1cc'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_dbea7.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Wersja programu MSBuild 17.14.23+b0019275e dla .NET Framework
+        Kompilacja rozpocz─Ö┼éa si─Ö 27.10.2025 22:06:53.
+        
+        Projekt ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-78v1cc\\cmTC_dbea7.vcxprojÔÇŁ w w─Ö┼║le 1 (domy┼Ťlne elementy docelowe).
+        PrepareForBuild:
+          Dane wyj┼Ťciowe ze struktur─ů s─ů w┼é─ůczone. Formatowanie diagnostyki kompilatora b─Ödzie odzwierciedla─ç hierarchi─Ö b┼é─Öd├│w. Aby uzyska─ç wi─Öcej informacji, zobacz https://aka.ms/cpp/structured-output.
+          Tworzenie katalogu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-78v1cc\\Debug\\ÔÇŁ.
+          Tworzenie katalogu ÔÇ×cmTC_dbea7.dir\\Debug\\cmTC_dbea7.tlog\\ÔÇŁ.
+        InitializeBuildStatus:
+          Trwa tworzenie ÔÇ×cmTC_dbea7.dir\\Debug\\cmTC_dbea7.tlog\\unsuccessfulbuildÔÇŁ, poniewa┼╝ okre┼Ťlono "AlwaysCreate".
+          Modyfikowanie ÔÇ×cmTC_dbea7.dir\\Debug\\cmTC_dbea7.tlog\\unsuccessfulbuildÔÇŁ.
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_dbea7.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-78v1cc\\cmTC_dbea7.dir\\Debug\\vc143.pdb" /external:W0 /TC /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-78v1cc\\test_mpi.c"
+          Microsoft (R) C/C++ wersja kompilatora optymalizuj─ůcego 19.44.35219 dla x64
+          Copyright (C) Microsoft Corporation. Wszystkie prawa zastrze┼╝one.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_dbea7.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-78v1cc\\cmTC_dbea7.dir\\Debug\\vc143.pdb" /external:W0 /TC /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-78v1cc\\test_mpi.c"
+          test_mpi.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-78v1cc\\Debug\\cmTC_dbea7.exe" /INCREMENTAL /ILK:"cmTC_dbea7.dir\\Debug\\cmTC_dbea7.ilk" /NOLOGO "C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Lib\\x64\\msmpi.lib" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-78v1cc/Debug/cmTC_dbea7.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-78v1cc/Debug/cmTC_dbea7.lib" /MACHINE:X64  /machine:x64 cmTC_dbea7.dir\\Debug\\test_mpi.obj
+          cmTC_dbea7.vcxproj -> D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-78v1cc\\Debug\\cmTC_dbea7.exe
+        FinalizeBuildStatus:
+          Usuwanie pliku ÔÇ×cmTC_dbea7.dir\\Debug\\cmTC_dbea7.tlog\\unsuccessfulbuildÔÇŁ.
+          Modyfikowanie ÔÇ×cmTC_dbea7.dir\\Debug\\cmTC_dbea7.tlog\\cmTC_dbea7.lastbuildstateÔÇŁ.
+        Kompilowanie projektu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-78v1cc\\cmTC_dbea7.vcxprojÔÇŁ wykonane (domy┼Ťlne elementy docelowe).
+        
+        Kompilacja powiod┼éa si─Ö.
+            Ostrze┼╝enia: 0
+            Liczba b┼é─Öd├│w: 0
+        
+        Czas, kt├│ry up┼éyn─ů┼é: 00:00:02.28
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1447 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1491 (_MPI_try_staged_settings)"
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1814 (_MPI_check_lang_works)"
+      - "CMakeLists.txt:7 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode normal"
+    directories:
+      source: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-0yh94v"
+      binary: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-0yh94v"
+    cmakeVariables:
+      CMAKE_CUDA_ARCHITECTURES: "75"
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-0yh94v'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_e98a7.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Wersja programu MSBuild 17.14.23+b0019275e dla .NET Framework
+        Kompilacja rozpocz─Ö┼éa si─Ö 27.10.2025 22:07:00.
+        
+        Projekt ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0yh94v\\cmTC_e98a7.vcxprojÔÇŁ w w─Ö┼║le 1 (domy┼Ťlne elementy docelowe).
+        PrepareForBuild:
+          Dane wyj┼Ťciowe ze struktur─ů s─ů w┼é─ůczone. Formatowanie diagnostyki kompilatora b─Ödzie odzwierciedla─ç hierarchi─Ö b┼é─Öd├│w. Aby uzyska─ç wi─Öcej informacji, zobacz https://aka.ms/cpp/structured-output.
+          Tworzenie katalogu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0yh94v\\Debug\\ÔÇŁ.
+          Tworzenie katalogu ÔÇ×cmTC_e98a7.dir\\Debug\\cmTC_e98a7.tlog\\ÔÇŁ.
+        InitializeBuildStatus:
+          Trwa tworzenie ÔÇ×cmTC_e98a7.dir\\Debug\\cmTC_e98a7.tlog\\unsuccessfulbuildÔÇŁ, poniewa┼╝ okre┼Ťlono "AlwaysCreate".
+          Modyfikowanie ÔÇ×cmTC_e98a7.dir\\Debug\\cmTC_e98a7.tlog\\unsuccessfulbuildÔÇŁ.
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /std:c++17 /Fo"cmTC_e98a7.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0yh94v\\cmTC_e98a7.dir\\Debug\\vc143.pdb" /external:W0 /TP /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0yh94v\\test_mpi.cpp"
+          Microsoft (R) C/C++ wersja kompilatora optymalizuj─ůcego 19.44.35219 dla x64
+          Copyright (C) Microsoft Corporation. Wszystkie prawa zastrze┼╝one.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /std:c++17 /Fo"cmTC_e98a7.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0yh94v\\cmTC_e98a7.dir\\Debug\\vc143.pdb" /external:W0 /TP /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0yh94v\\test_mpi.cpp"
+          test_mpi.cpp
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0yh94v\\Debug\\cmTC_e98a7.exe" /INCREMENTAL /ILK:"cmTC_e98a7.dir\\Debug\\cmTC_e98a7.ilk" /NOLOGO "C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Lib\\x64\\msmpi.lib" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-0yh94v/Debug/cmTC_e98a7.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-0yh94v/Debug/cmTC_e98a7.lib" /MACHINE:X64  /machine:x64 cmTC_e98a7.dir\\Debug\\test_mpi.obj
+          cmTC_e98a7.vcxproj -> D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0yh94v\\Debug\\cmTC_e98a7.exe
+        FinalizeBuildStatus:
+          Usuwanie pliku ÔÇ×cmTC_e98a7.dir\\Debug\\cmTC_e98a7.tlog\\unsuccessfulbuildÔÇŁ.
+          Modyfikowanie ÔÇ×cmTC_e98a7.dir\\Debug\\cmTC_e98a7.tlog\\cmTC_e98a7.lastbuildstateÔÇŁ.
+        Kompilowanie projektu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0yh94v\\cmTC_e98a7.vcxprojÔÇŁ wykonane (domy┼Ťlne elementy docelowe).
+        
+        Kompilacja powiod┼éa si─Ö.
+            Ostrze┼╝enia: 0
+            Liczba b┼é─Öd├│w: 0
+        
+        Czas, kt├│ry up┼éyn─ů┼é: 00:00:02.69
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1447 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1841 (_MPI_try_staged_settings)"
+      - "CMakeLists.txt:7 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode MPICXX"
+    directories:
+      source: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-q397by"
+      binary: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-q397by"
+    cmakeVariables:
+      CMAKE_CUDA_ARCHITECTURES: "75"
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-q397by'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_096c3.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Wersja programu MSBuild 17.14.23+b0019275e dla .NET Framework
+        Kompilacja rozpocz─Ö┼éa si─Ö 27.10.2025 22:07:04.
+        
+        Projekt ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-q397by\\cmTC_096c3.vcxprojÔÇŁ w w─Ö┼║le 1 (domy┼Ťlne elementy docelowe).
+        PrepareForBuild:
+          Dane wyj┼Ťciowe ze struktur─ů s─ů w┼é─ůczone. Formatowanie diagnostyki kompilatora b─Ödzie odzwierciedla─ç hierarchi─Ö b┼é─Öd├│w. Aby uzyska─ç wi─Öcej informacji, zobacz https://aka.ms/cpp/structured-output.
+          Tworzenie katalogu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-q397by\\Debug\\ÔÇŁ.
+          Tworzenie katalogu ÔÇ×cmTC_096c3.dir\\Debug\\cmTC_096c3.tlog\\ÔÇŁ.
+        InitializeBuildStatus:
+          Trwa tworzenie ÔÇ×cmTC_096c3.dir\\Debug\\cmTC_096c3.tlog\\unsuccessfulbuildÔÇŁ, poniewa┼╝ okre┼Ťlono "AlwaysCreate".
+          Modyfikowanie ÔÇ×cmTC_096c3.dir\\Debug\\cmTC_096c3.tlog\\unsuccessfulbuildÔÇŁ.
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /std:c++17 /Fo"cmTC_096c3.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-q397by\\cmTC_096c3.dir\\Debug\\vc143.pdb" /external:W0 /TP /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-q397by\\test_mpi.cpp"
+          Microsoft (R) C/C++ wersja kompilatora optymalizuj─ůcego 19.44.35219 dla x64
+          Copyright (C) Microsoft Corporation. Wszystkie prawa zastrze┼╝one.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /std:c++17 /Fo"cmTC_096c3.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-q397by\\cmTC_096c3.dir\\Debug\\vc143.pdb" /external:W0 /TP /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-q397by\\test_mpi.cpp"
+          test_mpi.cpp
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-q397by\\Debug\\cmTC_096c3.exe" /INCREMENTAL /ILK:"cmTC_096c3.dir\\Debug\\cmTC_096c3.ilk" /NOLOGO "C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Lib\\x64\\msmpi.lib" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-q397by/Debug/cmTC_096c3.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-q397by/Debug/cmTC_096c3.lib" /MACHINE:X64  /machine:x64 cmTC_096c3.dir\\Debug\\test_mpi.obj
+          cmTC_096c3.vcxproj -> D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-q397by\\Debug\\cmTC_096c3.exe
+        FinalizeBuildStatus:
+          Usuwanie pliku ÔÇ×cmTC_096c3.dir\\Debug\\cmTC_096c3.tlog\\unsuccessfulbuildÔÇŁ.
+          Modyfikowanie ÔÇ×cmTC_096c3.dir\\Debug\\cmTC_096c3.tlog\\cmTC_096c3.lastbuildstateÔÇŁ.
+        Kompilowanie projektu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-q397by\\cmTC_096c3.vcxprojÔÇŁ wykonane (domy┼Ťlne elementy docelowe).
+        
+        Kompilacja powiod┼éa si─Ö.
+            Ostrze┼╝enia: 0
+            Liczba b┼é─Öd├│w: 0
+        
+        Czas, kt├│ry up┼éyn─ů┼é: 00:00:02.35
+        
+      exitCode: 0
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindCUDAToolkit.cmake:1088 (find_path)"
+      - "CMakeLists.txt:17 (find_package)"
+    mode: "path"
+    variable: "CUDAToolkit_CUBLAS_INCLUDE_DIR"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "cublas_v2.h"
+    candidate_directories:
+      - "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0/include/"
+      - "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0/include/cccl/"
+    found: "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0/include/"
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\VC\\VCPackages"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TestWindow"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\bin\\Roslyn"
+        - "C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v10.0A\\bin\\NETFX 4.8 Tools\\x64\\"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\Tools"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Team Tools\\DiagnosticsHub\\Collector"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.26100.0\\\\x64"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\\\x64"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\\\MSBuild\\Current\\Bin\\amd64"
+        - "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\"
+        - "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.0\\bin\\x64"
+        - "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.0\\bin"
+        - "C:\\Program Files\\Microsoft MPI\\Bin\\"
+        - "C:\\Python314\\Scripts\\"
+        - "C:\\Python314\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "D:\\Program Files\\MATLAB\\R2025b\\bin"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Common Files\\Autodesk Shared\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2025.3.1\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\Users\\kskoc\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\kskoc\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\kskoc\\AppData\\Roaming\\npm"
+        - "C:\\Users\\kskoc\\.dotnet\\tools"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\Ninja"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\VC\\Linux\\bin\\ConnectionManagerExe"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\vcpkg"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files/colour_diffusion"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files/colour_diffusion"
+      ENV{INCLUDE}:
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\include"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\ATLMFC\\include"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\VS\\include"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\ucrt"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\um"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\shared"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\winrt"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\cppwinrt"
+        - "C:\\Program Files (x86)\\Windows Kits\\NETFXSDK\\4.8\\include\\um"
+...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1447 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1491 (_MPI_try_staged_settings)"
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1814 (_MPI_check_lang_works)"
+      - "CMakeLists.txt:7 (find_package)"
+    description: "The MPI test test_mpi for C in mode normal"
+    directories:
+      source: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-qug5em"
+      binary: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-qug5em"
+    cmakeVariables:
+      CMAKE_CUDA_ARCHITECTURES: "75"
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
+      CMAKE_C_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "MPI_RESULT_C_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-qug5em'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_c5aed.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Wersja programu MSBuild 17.14.23+b0019275e dla .NET Framework
+        Kompilacja rozpocz─Ö┼éa si─Ö 28.10.2025 18:01:37.
+        
+        Projekt ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-qug5em\\cmTC_c5aed.vcxprojÔÇŁ w w─Ö┼║le 1 (domy┼Ťlne elementy docelowe).
+        PrepareForBuild:
+          Dane wyj┼Ťciowe ze struktur─ů s─ů w┼é─ůczone. Formatowanie diagnostyki kompilatora b─Ödzie odzwierciedla─ç hierarchi─Ö b┼é─Öd├│w. Aby uzyska─ç wi─Öcej informacji, zobacz https://aka.ms/cpp/structured-output.
+          Tworzenie katalogu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-qug5em\\Debug\\ÔÇŁ.
+          Tworzenie katalogu ÔÇ×cmTC_c5aed.dir\\Debug\\cmTC_c5aed.tlog\\ÔÇŁ.
+        InitializeBuildStatus:
+          Trwa tworzenie ÔÇ×cmTC_c5aed.dir\\Debug\\cmTC_c5aed.tlog\\unsuccessfulbuildÔÇŁ, poniewa┼╝ okre┼Ťlono "AlwaysCreate".
+          Modyfikowanie ÔÇ×cmTC_c5aed.dir\\Debug\\cmTC_c5aed.tlog\\unsuccessfulbuildÔÇŁ.
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_c5aed.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-qug5em\\cmTC_c5aed.dir\\Debug\\vc143.pdb" /external:W0 /TC /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-qug5em\\test_mpi.c"
+          Microsoft (R) C/C++ wersja kompilatora optymalizuj─ůcego 19.44.35219 dla x64
+          Copyright (C) Microsoft Corporation. Wszystkie prawa zastrze┼╝one.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_c5aed.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-qug5em\\cmTC_c5aed.dir\\Debug\\vc143.pdb" /external:W0 /TC /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-qug5em\\test_mpi.c"
+          test_mpi.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-qug5em\\Debug\\cmTC_c5aed.exe" /INCREMENTAL /ILK:"cmTC_c5aed.dir\\Debug\\cmTC_c5aed.ilk" /NOLOGO "C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Lib\\x64\\msmpi.lib" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-qug5em/Debug/cmTC_c5aed.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-qug5em/Debug/cmTC_c5aed.lib" /MACHINE:X64  /machine:x64 cmTC_c5aed.dir\\Debug\\test_mpi.obj
+          cmTC_c5aed.vcxproj -> D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-qug5em\\Debug\\cmTC_c5aed.exe
+        FinalizeBuildStatus:
+          Usuwanie pliku ÔÇ×cmTC_c5aed.dir\\Debug\\cmTC_c5aed.tlog\\unsuccessfulbuildÔÇŁ.
+          Modyfikowanie ÔÇ×cmTC_c5aed.dir\\Debug\\cmTC_c5aed.tlog\\cmTC_c5aed.lastbuildstateÔÇŁ.
+        Kompilowanie projektu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-qug5em\\cmTC_c5aed.vcxprojÔÇŁ wykonane (domy┼Ťlne elementy docelowe).
+        
+        Kompilacja powiod┼éa si─Ö.
+            Ostrze┼╝enia: 0
+            Liczba b┼é─Öd├│w: 0
+        
+        Czas, kt├│ry up┼éyn─ů┼é: 00:00:00.75
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1447 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1491 (_MPI_try_staged_settings)"
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1814 (_MPI_check_lang_works)"
+      - "CMakeLists.txt:7 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode normal"
+    directories:
+      source: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-yq6aql"
+      binary: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-yq6aql"
+    cmakeVariables:
+      CMAKE_CUDA_ARCHITECTURES: "75"
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-yq6aql'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_7549d.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Wersja programu MSBuild 17.14.23+b0019275e dla .NET Framework
+        Kompilacja rozpocz─Ö┼éa si─Ö 28.10.2025 18:01:39.
+        
+        Projekt ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-yq6aql\\cmTC_7549d.vcxprojÔÇŁ w w─Ö┼║le 1 (domy┼Ťlne elementy docelowe).
+        PrepareForBuild:
+          Dane wyj┼Ťciowe ze struktur─ů s─ů w┼é─ůczone. Formatowanie diagnostyki kompilatora b─Ödzie odzwierciedla─ç hierarchi─Ö b┼é─Öd├│w. Aby uzyska─ç wi─Öcej informacji, zobacz https://aka.ms/cpp/structured-output.
+          Tworzenie katalogu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-yq6aql\\Debug\\ÔÇŁ.
+          Tworzenie katalogu ÔÇ×cmTC_7549d.dir\\Debug\\cmTC_7549d.tlog\\ÔÇŁ.
+        InitializeBuildStatus:
+          Trwa tworzenie ÔÇ×cmTC_7549d.dir\\Debug\\cmTC_7549d.tlog\\unsuccessfulbuildÔÇŁ, poniewa┼╝ okre┼Ťlono "AlwaysCreate".
+          Modyfikowanie ÔÇ×cmTC_7549d.dir\\Debug\\cmTC_7549d.tlog\\unsuccessfulbuildÔÇŁ.
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /std:c++17 /Fo"cmTC_7549d.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-yq6aql\\cmTC_7549d.dir\\Debug\\vc143.pdb" /external:W0 /TP /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-yq6aql\\test_mpi.cpp"
+          Microsoft (R) C/C++ wersja kompilatora optymalizuj─ůcego 19.44.35219 dla x64
+          Copyright (C) Microsoft Corporation. Wszystkie prawa zastrze┼╝one.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /std:c++17 /Fo"cmTC_7549d.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-yq6aql\\cmTC_7549d.dir\\Debug\\vc143.pdb" /external:W0 /TP /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-yq6aql\\test_mpi.cpp"
+          test_mpi.cpp
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-yq6aql\\Debug\\cmTC_7549d.exe" /INCREMENTAL /ILK:"cmTC_7549d.dir\\Debug\\cmTC_7549d.ilk" /NOLOGO "C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Lib\\x64\\msmpi.lib" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-yq6aql/Debug/cmTC_7549d.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-yq6aql/Debug/cmTC_7549d.lib" /MACHINE:X64  /machine:x64 cmTC_7549d.dir\\Debug\\test_mpi.obj
+          cmTC_7549d.vcxproj -> D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-yq6aql\\Debug\\cmTC_7549d.exe
+        FinalizeBuildStatus:
+          Usuwanie pliku ÔÇ×cmTC_7549d.dir\\Debug\\cmTC_7549d.tlog\\unsuccessfulbuildÔÇŁ.
+          Modyfikowanie ÔÇ×cmTC_7549d.dir\\Debug\\cmTC_7549d.tlog\\cmTC_7549d.lastbuildstateÔÇŁ.
+        Kompilowanie projektu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-yq6aql\\cmTC_7549d.vcxprojÔÇŁ wykonane (domy┼Ťlne elementy docelowe).
+        
+        Kompilacja powiod┼éa si─Ö.
+            Ostrze┼╝enia: 0
+            Liczba b┼é─Öd├│w: 0
+        
+        Czas, kt├│ry up┼éyn─ů┼é: 00:00:00.66
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1447 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindMPI.cmake:1841 (_MPI_try_staged_settings)"
+      - "CMakeLists.txt:7 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode MPICXX"
+    directories:
+      source: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-xllrwl"
+      binary: "D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-xllrwl"
+    cmakeVariables:
+      CMAKE_CUDA_ARCHITECTURES: "75"
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-xllrwl'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_b2258.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Wersja programu MSBuild 17.14.23+b0019275e dla .NET Framework
+        Kompilacja rozpocz─Ö┼éa si─Ö 28.10.2025 18:01:40.
+        
+        Projekt ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xllrwl\\cmTC_b2258.vcxprojÔÇŁ w w─Ö┼║le 1 (domy┼Ťlne elementy docelowe).
+        PrepareForBuild:
+          Dane wyj┼Ťciowe ze struktur─ů s─ů w┼é─ůczone. Formatowanie diagnostyki kompilatora b─Ödzie odzwierciedla─ç hierarchi─Ö b┼é─Öd├│w. Aby uzyska─ç wi─Öcej informacji, zobacz https://aka.ms/cpp/structured-output.
+          Tworzenie katalogu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xllrwl\\Debug\\ÔÇŁ.
+          Tworzenie katalogu ÔÇ×cmTC_b2258.dir\\Debug\\cmTC_b2258.tlog\\ÔÇŁ.
+        InitializeBuildStatus:
+          Trwa tworzenie ÔÇ×cmTC_b2258.dir\\Debug\\cmTC_b2258.tlog\\unsuccessfulbuildÔÇŁ, poniewa┼╝ okre┼Ťlono "AlwaysCreate".
+          Modyfikowanie ÔÇ×cmTC_b2258.dir\\Debug\\cmTC_b2258.tlog\\unsuccessfulbuildÔÇŁ.
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /std:c++17 /Fo"cmTC_b2258.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xllrwl\\cmTC_b2258.dir\\Debug\\vc143.pdb" /external:W0 /TP /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xllrwl\\test_mpi.cpp"
+          Microsoft (R) C/C++ wersja kompilatora optymalizuj─ůcego 19.44.35219 dla x64
+          Copyright (C) Microsoft Corporation. Wszystkie prawa zastrze┼╝one.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /std:c++17 /Fo"cmTC_b2258.dir\\Debug\\\\" /Fd"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xllrwl\\cmTC_b2258.dir\\Debug\\vc143.pdb" /external:W0 /TP /errorReport:queue  /external:I "C:/Program Files (x86)/Microsoft SDKs/MPI/Include" "D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xllrwl\\test_mpi.cpp"
+          test_mpi.cpp
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xllrwl\\Debug\\cmTC_b2258.exe" /INCREMENTAL /ILK:"cmTC_b2258.dir\\Debug\\cmTC_b2258.ilk" /NOLOGO "C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Lib\\x64\\msmpi.lib" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-xllrwl/Debug/cmTC_b2258.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/CMakeScratch/TryCompile-xllrwl/Debug/cmTC_b2258.lib" /MACHINE:X64  /machine:x64 cmTC_b2258.dir\\Debug\\test_mpi.obj
+          cmTC_b2258.vcxproj -> D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xllrwl\\Debug\\cmTC_b2258.exe
+        FinalizeBuildStatus:
+          Usuwanie pliku ÔÇ×cmTC_b2258.dir\\Debug\\cmTC_b2258.tlog\\unsuccessfulbuildÔÇŁ.
+          Modyfikowanie ÔÇ×cmTC_b2258.dir\\Debug\\cmTC_b2258.tlog\\cmTC_b2258.lastbuildstateÔÇŁ.
+        Kompilowanie projektu ÔÇ×D:\\Format Files 30.03.2024\\studia\\pk\\PRIR\\colour-diffusion-parallel\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xllrwl\\cmTC_b2258.vcxprojÔÇŁ wykonane (domy┼Ťlne elementy docelowe).
+        
+        Kompilacja powiod┼éa si─Ö.
+            Ostrze┼╝enia: 0
+            Liczba b┼é─Öd├│w: 0
+        
+        Czas, kt├│ry up┼éyn─ů┼é: 00:00:00.65
+        
+      exitCode: 0
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.2/Modules/FindCUDAToolkit.cmake:1088 (find_path)"
+      - "CMakeLists.txt:17 (find_package)"
+    mode: "path"
+    variable: "CUDAToolkit_CUBLAS_INCLUDE_DIR"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "cublas_v2.h"
+    candidate_directories:
+      - "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0/include/"
+      - "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0/include/cccl/"
+    found: "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0/include/"
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\VC\\VCPackages"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TestWindow"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\bin\\Roslyn"
+        - "C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v10.0A\\bin\\NETFX 4.8 Tools\\x64\\"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\Tools"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Team Tools\\DiagnosticsHub\\Collector"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.26100.0\\\\x64"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\\\x64"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\\\MSBuild\\Current\\Bin\\amd64"
+        - "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\"
+        - "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.0\\bin\\x64"
+        - "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.0\\bin"
+        - "C:\\Program Files\\Microsoft MPI\\Bin\\"
+        - "C:\\Python314\\Scripts\\"
+        - "C:\\Python314\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "D:\\Program Files\\MATLAB\\R2025b\\bin"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Common Files\\Autodesk Shared\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2025.3.1\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\Users\\kskoc\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\kskoc\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\kskoc\\AppData\\Roaming\\npm"
+        - "C:\\Users\\kskoc\\.dotnet\\tools"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\Ninja"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\VC\\Linux\\bin\\ConnectionManagerExe"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\vcpkg"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files/colour_diffusion"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files/colour_diffusion"
+      ENV{INCLUDE}:
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\include"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\ATLMFC\\include"
+        - "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\VS\\include"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\ucrt"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\um"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\shared"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\winrt"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\cppwinrt"
+        - "C:\\Program Files (x86)\\Windows Kits\\NETFXSDK\\4.8\\include\\um"
+...
