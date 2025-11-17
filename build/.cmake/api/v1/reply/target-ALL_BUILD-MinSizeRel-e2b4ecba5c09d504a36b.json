@@ -22,13 +22,13 @@
 	"dependencies" : 
 	[
 		{
+			"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df"
+		},
+		{
 			"id" : "cuda_exec::@6890427a1f51a3e7e1df"
 		},
 		{
 			"id" : "openmp_exec::@6890427a1f51a3e7e1df"
-		},
-		{
-			"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df"
 		},
 		{
 			"id" : "mpi_exec::@6890427a1f51a3e7e1df"
