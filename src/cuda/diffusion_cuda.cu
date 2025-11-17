@@ -1,11 +1,3 @@
-// FILE: flood_sim.cu
-// CUDA 12.6 compatible implementation of a color diffusion simulation using a 5- or 9-point
-// stencil. Uses shared memory (tiling) to accelerate neighbor loads. Produces PPM frames
-// that can be turned into an animation with the provided Python script.
-
-// Build: nvcc -std=c++17 -O3 flood_sim.cu -o flood_sim
-// Run example: ./flood_sim --w 1000 --h 1000 --steps 1000 --stencil 9 --tile 32 --save_every 10 --outdir frames
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -13,7 +5,6 @@
 #include <string>
 #include <chrono>
 #include <filesystem>
-// removed getopt.h for Windows compatibility
 
 #define CHECK_CUDA(call) do { cudaError_t e = (call); if(e!=cudaSuccess){fprintf(stderr,"CUDA %s:%d: %s\n",__FILE__,__LINE__,cudaGetErrorString(e)); exit(1);}} while(0)
 
@@ -51,6 +42,13 @@ __device__ __forceinline__ float3f avg_stencil_9(const float3f* s, int sx, int x
     return sum;
 }
 
+// Safe integer clamp for device code (avoid lambda capture issues)
+__device__ __forceinline__ int clamp_i(int v, int hi) {
+    if (v < 0) return 0;
+    if (v >= hi) return hi - 1;
+    return v;
+}
+
 // Kernel: input -> output using shared memory tile with halo
 // width, height: global dimensions
 // tile: interior tile size (without halos). halo = 1 for 5/9 point stencils
@@ -78,57 +76,53 @@ extern "C" __global__ void diffuse_kernel(const float3f* in, float3f* out, int w
     // Each thread loads one interior cell and also some threads load halo neighbors. A simple approach:
     // Each thread loads its cell into shared mem at (sx_off, sy_off). Then we separately have threads at borders load halos.
 
-    // Compute global clamped coordinate helper
-    auto clamp = [&](int v, int hi) { if (v < 0) return 0; if (v > hi - 1) return hi - 1; return v; };
-
     // Load central value
     if (tx < tile && ty < tile) {
-        int cx = clamp(gx, width);
-        int cy = clamp(gy, height);
+        int cx = clamp_i(gx, width);
+        int cy = clamp_i(gy, height);
         s_mem[sy_off * sx + sx_off] = in[cy * width + cx];
     }
 
     __syncthreads();
 
     // Load halos: threads on edges of tile load needed halo values
-    // Left halo
     if (tx < tile && ty < tile) {
         if (tx == 0) {
-            int hx = clamp(gx - 1, width);
-            int hy = clamp(gy, height);
+            int hx = clamp_i(gx - 1, width);
+            int hy = clamp_i(gy, height);
             s_mem[sy_off * sx + (sx_off - 1)] = in[hy * width + hx];
         }
         if (tx == tile - 1) {
-            int hx = clamp(gx + 1, width);
-            int hy = clamp(gy, height);
+            int hx = clamp_i(gx + 1, width);
+            int hy = clamp_i(gy, height);
             s_mem[sy_off * sx + (sx_off + 1)] = in[hy * width + hx];
         }
         if (ty == 0) {
-            int hx = clamp(gx, width);
-            int hy = clamp(gy - 1, height);
+            int hx = clamp_i(gx, width);
+            int hy = clamp_i(gy - 1, height);
             s_mem[(sy_off - 1) * sx + sx_off] = in[hy * width + hx];
         }
         if (ty == tile - 1) {
-            int hx = clamp(gx, width);
-            int hy = clamp(gy + 1, height);
+            int hx = clamp_i(gx, width);
+            int hy = clamp_i(gy + 1, height);
             s_mem[(sy_off + 1) * sx + sx_off] = in[hy * width + hx];
         }
         // corners for 9-point
         if (stencil == 9) {
             if (tx == 0 && ty == 0) {
-                int hx = clamp(gx - 1, width); int hy = clamp(gy - 1, height);
+                int hx = clamp_i(gx - 1, width); int hy = clamp_i(gy - 1, height);
                 s_mem[(sy_off - 1) * sx + (sx_off - 1)] = in[hy * width + hx];
             }
             if (tx == 0 && ty == tile - 1) {
-                int hx = clamp(gx - 1, width); int hy = clamp(gy + 1, height);
+                int hx = clamp_i(gx - 1, width); int hy = clamp_i(gy + 1, height);
                 s_mem[(sy_off + 1) * sx + (sx_off - 1)] = in[hy * width + hx];
             }
             if (tx == tile - 1 && ty == 0) {
-                int hx = clamp(gx + 1, width); int hy = clamp(gy - 1, height);
+                int hx = clamp_i(gx + 1, width); int hy = clamp_i(gy - 1, height);
                 s_mem[(sy_off - 1) * sx + (sx_off + 1)] = in[hy * width + hx];
             }
             if (tx == tile - 1 && ty == tile - 1) {
-                int hx = clamp(gx + 1, width); int hy = clamp(gy + 1, height);
+                int hx = clamp_i(gx + 1, width); int hy = clamp_i(gy + 1, height);
                 s_mem[(sy_off + 1) * sx + (sx_off + 1)] = in[hy * width + hx];
             }
         }
@@ -147,21 +141,44 @@ extern "C" __global__ void diffuse_kernel(const float3f* in, float3f* out, int w
 
 // Host helpers: initialize grid with a few color sources
 void place_sources(std::vector<float3f>& buf, int W, int H) {
-    // Clear
     for (int i = 0; i < W * H; ++i) { buf[i].x = buf[i].y = buf[i].z = 0.f; }
-    // Place a few colored blobs
+
+    // Now we use a "edge-boost" profile: wartoœci rosn¹ z odleg³oœci¹ od œrodka Ÿród³a.
+    // Parametry: beta - ile razy dalej oddalone punkty s¹ silniejsze ni¿ centrum,
+    // intensity - ogólny wspó³czynnik mno¿¹cy (zwiêksza ca³kowit¹ energiê Ÿród³a).
+    const float beta = 4.0f;      // edge boost factor (edge ~ beta * center)
+    const float intensity = 1.8f; // global amplitude multiplier
+
     auto put = [&](int cx, int cy, float r, float g, float b, int radius) {
-        for (int y = cy - radius; y <= cy + radius; ++y) for (int x = cx - radius; x <= cx + radius; ++x) {
-            if (x < 0 || x >= W || y < 0 || y >= H) continue;
-            int dx = x - cx, dy = y - cy; if (dx * dx + dy * dy > radius * radius) continue;
-            float f = 1.0f - sqrtf((float)(dx * dx + dy * dy)) / (float)radius;
-            int idx = y * W + x;
-            buf[idx].x = r * f; buf[idx].y = g * f; buf[idx].z = b * f;
+        const int r2 = radius * radius;
+        for (int y = cy - radius; y <= cy + radius; ++y) {
+            for (int x = cx - radius; x <= cx + radius; ++x) {
+                if (x < 0 || x >= W || y < 0 || y >= H) continue;
+                int dx = x - cx, dy = y - cy;
+                int d2 = dx * dx + dy * dy;
+                if (d2 > r2) continue;
+                float dist = sqrtf((float)d2);
+                float t = dist / (float)radius; // 0..1
+
+                // weight increases linearly with distance from center:
+                // center: w = 1.0, edge: w = beta
+                float w = 1.0f + (beta - 1.0f) * t;
+
+                // apply global intensity
+                float f = w * intensity;
+
+                int idx = y * W + x;
+                buf[idx].x += r * f; // use += to accumulate overlapping sources
+                buf[idx].y += g * f;
+                buf[idx].z += b * f;
+            }
         }
         };
-    put(W / 4, H / 3, 1.f, 0.f, 0.f, 30);
-    put(3 * W / 4, 2 * H / 3, 0.f, 1.f, 0.f, 30);
-    put(W / 2, H / 2, 0.f, 0.f, 1.f, 40);
+
+    // wiêksze promienie i intensywnoœæ ustawione powy¿ej
+    put(W / 4, H / 3, 1.f, 0.f, 0.f, 150);
+    put(3 * W / 4, 2 * H / 3, 0.f, 1.f, 0.f, 150);
+    put(W / 2, H / 2, 0.f, 0.f, 1.f, 150);
 }
 
 void write_ppm(const std::string& path, const std::vector<float3f>& buf, int W, int H) {
@@ -193,14 +210,15 @@ void parse_args(int argc, char** argv,
 }
 
 int main(int argc, char** argv) {
-    int W = 1000, H = 1000, steps = 1000;
+    int W = 1000, H = 1000, steps = 100000;
     int stencil = 9;
-    int tile = 32; // interior tile size used for blockDim
-    int save_every = 10;
+    int tile = 32;
+    int save_every = 500;
     std::string outdir = "frames";
 
     // Simple arg parse (no getopt)
     parse_args(argc, argv, W, H, steps, stencil, tile, save_every, outdir);
+    std::filesystem::create_directories(outdir);
 
     size_t N = (size_t)W * H;
     std::vector<float3f> host_buf(N);
@@ -216,8 +234,7 @@ int main(int argc, char** argv) {
     dim3 grid((W + tile - 1) / tile, (H + tile - 1) / tile);
 
     // shared memory size: (tile+2)^2 * sizeof(float3f)
-    int sx = tile + 2;
-    size_t smem = (size_t)sx * (tile + 2) * sizeof(float3f);
+    size_t smem = (size_t)(tile + 2) * (tile + 2) * sizeof(float3f);
 
     auto t0 = std::chrono::high_resolution_clock::now();
     for (int s = 0; s < steps; ++s) {
@@ -227,10 +244,11 @@ int main(int argc, char** argv) {
         std::swap(d_a, d_b);
 
         if ((s % save_every) == 0) {
-            // copy back and write ppm
             CHECK_CUDA(cudaMemcpy(host_buf.data(), d_a, N * sizeof(float3f), cudaMemcpyDeviceToHost));
             char path[1024]; sprintf(path, "%s/frame_%06d.ppm", outdir.c_str(), s);
             write_ppm(path, host_buf, W, H);
+            double total = 0.0;
+            for (size_t i = 0; i < N; ++i) total += host_buf[i].x + host_buf[i].y + host_buf[i].z; printf("step %d total energy: %.6f\n", s, total);
         }
     }
     auto t1 = std::chrono::high_resolution_clock::now();
