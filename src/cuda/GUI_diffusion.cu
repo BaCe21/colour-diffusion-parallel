@@ -21,7 +21,12 @@ std::vector<ProgramEntry> programs = {
     {
         "CUDA",
         "diffusion_cuda.exe",
-        { "--w=1000", "--h=1000", "--steps=50000", "--tile=32", "--save_every=500" }
+        { "--w=1000", "--h=1000", "--steps=50000", "--tile=32", "--save_every=500", "--repeat=10" }
+    },
+    {
+        "Sequential",
+        "diffusion_seq.exe",
+        { "--w=100", "--h=100", "--steps=10000", "--save_every=1000", "--repeat=1" }
     },
     {
         "Inny program",
@@ -303,14 +308,14 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int) {
     WNDCLASSA wc{};
     wc.lpfnWndProc = WndProc;
     wc.hInstance = hInst;
-    wc.lpszClassName = "CudaGUIClass";
+    wc.lpszClassName = "ColorDiffusionGUIClass";
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 
     RegisterClassA(&wc);
 
     HWND hwnd = CreateWindowA(
-        "CudaGUIClass", "CUDA Program Runner",
+        "ColorDiffusionGUIClass", "Color Diffusion Program Runner",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         CW_USEDEFAULT, CW_USEDEFAULT, 520, 520,
         NULL, NULL, hInst, NULL);

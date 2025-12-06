@@ -8,103 +8,36 @@
 #include <fstream>
 #include <numeric>
 #include <iostream>
-
-#define CHECK_CUDA(call) do { cudaError_t e = (call); if(e!=cudaSuccess){fprintf(stderr,"CUDA %s:%d: %s\n",__FILE__,__LINE__,cudaGetErrorString(e)); exit(1);}} while(0)
+#include <cmath>
 
 struct float3f { float x, y, z; };
 
-__device__ __forceinline__ float3f avg_stencil_9(const float3f* s, int sx, int x, int y) {
-    float3f sum = { 0.f,0.f,0.f };
+float3f avg_stencil_9(const float3f* data, int width, int height, int x, int y) {
+    float3f sum = { 0.f, 0.f, 0.f };
+    int count = 0;
+
     for (int dy = -1; dy <= 1; ++dy) {
         for (int dx = -1; dx <= 1; ++dx) {
-            float3f v = s[(y + dy) * sx + (x + dx)];
-            sum.x += v.x; sum.y += v.y; sum.z += v.z;
+            int nx = x + dx;
+            int ny = y + dy;
+
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                float3f v = data[ny * width + nx];
+                sum.x += v.x;
+                sum.y += v.y;
+                sum.z += v.z;
+                count++;
+            }
         }
     }
-    sum.x *= (1.0f / 9.0f); sum.y *= (1.0f / 9.0f); sum.z *= (1.0f / 9.0f);
+
+    if (count > 0) {
+        sum.x /= count;
+        sum.y /= count;
+        sum.z /= count;
+    }
+
     return sum;
-}
-
-__device__ __forceinline__ int clamp_i(int v, int hi) {
-    if (v < 0) return 0;
-    if (v >= hi) return hi - 1;
-    return v;
-}
-
-extern "C" __global__ void diffuse_kernel(const float3f* in, float3f* out, int width, int height, int tile) {
-    const int halo = 1;
-    const int sx = tile + 2 * halo;
-    extern __shared__ float3f s_mem[];
-
-    int bx = blockIdx.x; int by = blockIdx.y;
-    int tx = threadIdx.x; int ty = threadIdx.y;
-
-    int gx = bx * tile + tx;
-    int gy = by * tile + ty;
-
-    int sx_off = tx + halo;
-    int sy_off = ty + halo;
-
-    // Load central value
-    if (tx < tile && ty < tile) {
-        int cx = clamp_i(gx, width);
-        int cy = clamp_i(gy, height);
-        s_mem[sy_off * sx + sx_off] = in[cy * width + cx];
-    }
-
-    __syncthreads();
-
-    // Load halos
-    if (tx < tile && ty < tile) {
-
-        if (tx == 0) {
-            int hx = clamp_i(gx - 1, width);
-            int hy = clamp_i(gy, height);
-            s_mem[sy_off * sx + (sx_off - 1)] = in[hy * width + hx];
-        }
-        if (tx == tile - 1) {
-            int hx = clamp_i(gx + 1, width);
-            int hy = clamp_i(gy, height);
-            s_mem[sy_off * sx + (sx_off + 1)] = in[hy * width + hx];
-        }
-        if (ty == 0) {
-            int hx = clamp_i(gx, width);
-            int hy = clamp_i(gy - 1, height);
-            s_mem[(sy_off - 1) * sx + sx_off] = in[hy * width + hx];
-        }
-        if (ty == tile - 1) {
-            int hx = clamp_i(gx, width);
-            int hy = clamp_i(gy + 1, height);
-            s_mem[(sy_off + 1) * sx + sx_off] = in[hy * width + hx];
-        }
-
-
-        if (tx == 0 && ty == 0) {
-            int hx = clamp_i(gx - 1, width); int hy = clamp_i(gy - 1, height);
-            s_mem[(sy_off - 1) * sx + (sx_off - 1)] = in[hy * width + hx];
-        }
-        if (tx == 0 && ty == tile - 1) {
-            int hx = clamp_i(gx - 1, width); int hy = clamp_i(gy + 1, height);
-            s_mem[(sy_off + 1) * sx + (sx_off - 1)] = in[hy * width + hx];
-        }
-        if (tx == tile - 1 && ty == 0) {
-            int hx = clamp_i(gx + 1, width); int hy = clamp_i(gy - 1, height);
-            s_mem[(sy_off - 1) * sx + (sx_off + 1)] = in[hy * width + hx];
-        }
-        if (tx == tile - 1 && ty == tile - 1) {
-            int hx = clamp_i(gx + 1, width); int hy = clamp_i(gy + 1, height);
-            s_mem[(sy_off + 1) * sx + (sx_off + 1)] = in[hy * width + hx];
-        }
-    }
-
-    __syncthreads();
-
-    // Now compute average for interior pixels only
-    if (tx < tile && ty < tile && gx < width && gy < height) {
-        float3f res;
-        res = avg_stencil_9(s_mem, sx, sx_off, sy_off);
-        out[gy * width + gx] = res;
-    }
 }
 
 void place_sources(std::vector<float3f>& buf, int W, int H) {
@@ -164,31 +97,37 @@ void clear_directory(const std::string& outdir) {
 }
 
 void parse_args(int argc, char** argv,
-    int& W, int& H, int& steps, int& tile,
+    int& W, int& H, int& steps,
     int& save_every, std::string& outdir, int& repeat)
 {
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--w") && i + 1 < argc) W = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--h") && i + 1 < argc) H = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--steps") && i + 1 < argc) steps = atoi(argv[++i]);
-        else if (!strcmp(argv[i], "--tile") && i + 1 < argc) tile = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--save_every") && i + 1 < argc) save_every = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--outdir") && i + 1 < argc) outdir = argv[++i];
         else if (!strcmp(argv[i], "--repeat") && i + 1 < argc) repeat = atoi(argv[++i]);
     }
 }
 
+void diffuse_step(const std::vector<float3f>& in, std::vector<float3f>& out, int W, int H) {
+    for (int y = 0; y < H; ++y) {
+        for (int x = 0; x < W; ++x) {
+            out[y * W + x] = avg_stencil_9(in.data(), W, H, x, y);
+        }
+    }
+}
+
 int main(int argc, char** argv) {
     int W = 1000, H = 1000, steps = 100000;
-    int tile = 32;
     int save_every = 500;
     int repeat = 1;
-    std::string outdir = "frames";
+    std::string outdir = "frames_seq";
 
-    parse_args(argc, argv, W, H, steps, tile, save_every, outdir, repeat);
+    parse_args(argc, argv, W, H, steps, save_every, outdir, repeat);
 
     // Create CSV file name
-    std::string csv_filename = "diffusion_cuda_" + std::to_string(W) +
+    std::string csv_filename = "diffusion_seq_" + std::to_string(W) +
         "x" + std::to_string(H) + "_" +
         std::to_string(steps) + ".csv";
 
@@ -197,40 +136,35 @@ int main(int argc, char** argv) {
 
     // Run simulations
     for (int run = 0; run < repeat; ++run) {
-        std::cout << "\n=== Simulation Run " << (run + 1) << "/" << repeat << " ===" << std::endl;
+        std::cout << "\n=== SEQ Simulation Run " << (run + 1) << "/" << repeat << " ===" << std::endl;
 
         // Clear output directory before each simulation
         clear_directory(outdir);
         std::filesystem::create_directories(outdir);
 
         size_t N = (size_t)W * H;
-        std::vector<float3f> host_buf(N);
-        place_sources(host_buf, W, H);
+        std::vector<float3f> buf_a(N);
+        std::vector<float3f> buf_b(N);
 
-        float3f* d_a = nullptr, * d_b = nullptr;
-        CHECK_CUDA(cudaMalloc(&d_a, N * sizeof(float3f)));
-        CHECK_CUDA(cudaMalloc(&d_b, N * sizeof(float3f)));
-        CHECK_CUDA(cudaMemcpy(d_a, host_buf.data(), N * sizeof(float3f), cudaMemcpyHostToDevice));
-        CHECK_CUDA(cudaMemset(d_b, 0, N * sizeof(float3f)));
-
-        dim3 block(tile, tile);
-        dim3 grid((W + tile - 1) / tile, (H + tile - 1) / tile);
-
-        size_t smem = (size_t)(tile + 2) * (tile + 2) * sizeof(float3f);
+        place_sources(buf_a, W, H);
 
         auto t0 = std::chrono::high_resolution_clock::now();
         for (int s = 0; s < steps; ++s) {
-            diffuse_kernel << <grid, block, smem >> > (d_a, d_b, W, H, tile);
-            CHECK_CUDA(cudaGetLastError());
+            // Perform diffusion step
+            diffuse_step(buf_a, buf_b, W, H);
 
-            std::swap(d_a, d_b);
+            // Swap buffers
+            std::swap(buf_a, buf_b);
 
             if ((s % save_every) == 0 && save_every > 0) {
-                CHECK_CUDA(cudaMemcpy(host_buf.data(), d_a, N * sizeof(float3f), cudaMemcpyDeviceToHost));
-                char path[1024]; sprintf(path, "%s/frame_%06d.ppm", outdir.c_str(), s);
-                write_ppm(path, host_buf, W, H);
+                char path[1024];
+                sprintf(path, "%s/frame_%06d.ppm", outdir.c_str(), s);
+                write_ppm(path, buf_a, W, H);
+
                 double total = 0.0;
-                for (size_t i = 0; i < N; ++i) total += host_buf[i].x + host_buf[i].y + host_buf[i].z;
+                for (size_t i = 0; i < N; ++i) {
+                    total += buf_a[i].x + buf_a[i].y + buf_a[i].z;
+                }
                 printf("step %d total energy: %.6f\n", s, total);
             }
         }
@@ -244,11 +178,7 @@ int main(int argc, char** argv) {
         timings.push_back(secs);
 
         // Save final frame
-        CHECK_CUDA(cudaMemcpy(host_buf.data(), d_a, N * sizeof(float3f), cudaMemcpyDeviceToHost));
-        write_ppm(outdir + "/frame_final.ppm", host_buf, W, H);
-
-        cudaFree(d_a);
-        cudaFree(d_b);
+        write_ppm(outdir + "/frame_final.ppm", buf_a, W, H);
     }
 
     // Calculate statistics
@@ -277,12 +207,17 @@ int main(int argc, char** argv) {
         csv_file << "Runs," << timings.size() << "\n";
         csv_file.close();
 
-        std::cout << "\n=== Results Summary ===" << std::endl;
+        std::cout << "\n=== SEQ Results Summary ===" << std::endl;
         std::cout << "Timing data saved to: " << csv_filename << std::endl;
         std::cout << "Average time: " << avg_time << " s" << std::endl;
         std::cout << "Minimum time: " << min_time << " s" << std::endl;
         std::cout << "Maximum time: " << max_time << " s" << std::endl;
         std::cout << "Number of runs: " << timings.size() << std::endl;
+
+        // Calculate performance metrics
+        double total_pixels = (double)W * H * steps;
+        double mpps = total_pixels / (avg_time * 1e6);  // Million pixels per second
+        std::cout << "Performance: " << mpps << " MPixels/s" << std::endl;
     }
     else {
         std::cerr << "Error: Could not open CSV file for writing: " << csv_filename << std::endl;
