@@ -9,7 +9,7 @@
 #pragma comment(lib, "Gdi32.lib")
 
 // ---------------------------------------------
-// Konfiguracja programów
+// Konfiguracja programï¿½w
 // ---------------------------------------------
 struct ProgramEntry {
     std::string name;
@@ -29,9 +29,14 @@ std::vector<ProgramEntry> programs = {
         { "--w=100", "--h=100", "--steps=10000", "--save_every=1000", "--repeat=1" }
     },
     {
-        "Inny program",
-        "other_program.exe",
-        { "--param1=10", "--param2=20" }
+        "OpenMP (CPU - 8 watki)",
+        "main_openmp.exe",
+        { "--w=1000", "--h=1000", "--steps=5000", "--save_every=500", "--threads=8", "--repeat=1" }
+    },
+    {
+        "MPI (CPU - 4 procesy)", //to sie zmienia w tym pliku .bat
+        "run_mpi.bat", 
+        { "--w=1000", "--h=1000", "--steps=5000", "--save_every=500", "--repeat=1" }
     }
 };
 
@@ -55,7 +60,7 @@ void AppendLog(const std::string& msg) {
 }
 
 // ---------------------------------------------
-// Uruchamianie procesów
+// Uruchamianie procesï¿½w
 // ---------------------------------------------
 void RunProcess(const std::string& exe, const std::string& args) {
     AppendLog("Uruchamianie: " + exe + " " + args + "\r\n");
@@ -82,7 +87,7 @@ void RunProcess(const std::string& exe, const std::string& args) {
         NULL, NULL,
         &si, &pi))
     {
-        AppendLog("B£¥D: nie mo¿na uruchomiæ programu.\r\n");
+        AppendLog("Bï¿½ï¿½D: nie moï¿½na uruchomiï¿½ programu.\r\n");
         return;
     }
 
@@ -102,14 +107,14 @@ void RunProcess(const std::string& exe, const std::string& args) {
     CloseHandle(pi.hThread);
     CloseHandle(hRead);
 
-    AppendLog("Zakoñczono.\r\n");
+    AppendLog("Zakoï¿½czono.\r\n");
 }
 
 // ---------------------------------------------
 // Funkcja pomocnicza do niszczenia kontrolek
 // ---------------------------------------------
 void DestroyAllArgControls() {
-    // Niszczenie wszystkich istniej¹cych kontrolek
+    // Niszczenie wszystkich istniejï¿½cych kontrolek
     for (HWND h : argLabels) {
         if (h && IsWindow(h)) {
             DestroyWindow(h);
@@ -122,23 +127,23 @@ void DestroyAllArgControls() {
         }
     }
 
-    // Czyszczenie wektorów
+    // Czyszczenie wektorï¿½w
     argLabels.clear();
     argEdits.clear();
 
-    // Wymuszenie odœwie¿enia okna
+    // Wymuszenie odï¿½wieï¿½enia okna
     InvalidateRect(hComboProgram, NULL, TRUE);
     UpdateWindow(hComboProgram);
 }
 
 // ---------------------------------------------
-// Tworzenie pól argumentów
+// Tworzenie pï¿½l argumentï¿½w
 // ---------------------------------------------
 void CreateArgControls(HWND hwnd, int programIndex) {
-    // Usuñ wszystkie istniej¹ce kontrolki argumentów
+    // Usuï¿½ wszystkie istniejï¿½ce kontrolki argumentï¿½w
     DestroyAllArgControls();
 
-    // SprawdŸ, czy indeks jest poprawny
+    // Sprawdï¿½, czy indeks jest poprawny
     if (programIndex < 0 || programIndex >= (int)programs.size()) {
         return;
     }
@@ -152,7 +157,7 @@ void CreateArgControls(HWND hwnd, int programIndex) {
         size_t pos = arg.find('=');
 
         if (pos == std::string::npos) {
-            continue; // Pomijamy nieprawid³owe argumenty
+            continue; // Pomijamy nieprawidï¿½owe argumenty
         }
 
         std::string name = arg.substr(2, pos - 2);
@@ -170,19 +175,19 @@ void CreateArgControls(HWND hwnd, int programIndex) {
             150, y, 160, 22,
             hwnd, NULL, NULL, NULL);
 
-        // Dodawanie uchwytów do wektorów
+        // Dodawanie uchwytï¿½w do wektorï¿½w
         if (lbl) argLabels.push_back(lbl);
         if (edt) argEdits.push_back(edt);
 
         y += 28;
     }
 
-    // Przesuñ log, ¿eby nie zas³ania³ nowych kontrolek
+    // Przesuï¿½ log, ï¿½eby nie zasï¿½aniaï¿½ nowych kontrolek
     if (hEditLog && IsWindow(hEditLog)) {
         SetWindowPos(hEditLog, NULL, 20, y + 20, 450, 200, SWP_NOZORDER);
     }
 
-    // Wymuszenie odœwie¿enia okna
+    // Wymuszenie odï¿½wieï¿½enia okna
     InvalidateRect(hwnd, NULL, TRUE);
     UpdateWindow(hwnd);
 }
@@ -205,21 +210,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             350, 20, 120, 30,
             hwnd, (HMENU)1, NULL, NULL);
 
-        // Pocz¹tkowa pozycja dla logu (zostanie zmieniona w CreateArgControls)
+        // Poczï¿½tkowa pozycja dla logu (zostanie zmieniona w CreateArgControls)
         hEditLog = CreateWindowA("EDIT", "",
             WS_CHILD | WS_VISIBLE | WS_BORDER |
             ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL | ES_READONLY,
             20, 250, 450, 200,
             hwnd, NULL, NULL, NULL);
 
-        // Dodanie programów do comboboxa
+        // Dodanie programï¿½w do comboboxa
         for (const auto& p : programs) {
             SendMessageA(hComboProgram, CB_ADDSTRING, 0, (LPARAM)p.name.c_str());
         }
 
         SendMessageA(hComboProgram, CB_SETCURSEL, 0, 0);
 
-        // Utworzenie pocz¹tkowych kontrolek
+        // Utworzenie poczï¿½tkowych kontrolek
         CreateArgControls(hwnd, 0);
         break;
 
@@ -237,16 +242,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             int pidx = SendMessageA(hComboProgram, CB_GETCURSEL, 0, 0);
 
             if (pidx == CB_ERR || pidx < 0 || pidx >= (int)programs.size()) {
-                AppendLog("B£¥D: Nie wybrano programu!\r\n");
+                AppendLog("Bï¿½ï¿½D: Nie wybrano programu!\r\n");
                 break;
             }
 
             std::string args = "";
             ProgramEntry& program = programs[pidx];
 
-            // SprawdŸ czy liczba kontrolek odpowiada liczbie argumentów
+            // Sprawdï¿½ czy liczba kontrolek odpowiada liczbie argumentï¿½w
             if (argEdits.size() != program.args.size()) {
-                AppendLog("B£¥D: Nieprawid³owa liczba argumentów!\r\n");
+                AppendLog("Bï¿½ï¿½D: Nieprawidï¿½owa liczba argumentï¿½w!\r\n");
                 break;
             }
 
@@ -275,7 +280,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         int height = HIWORD(lParam);
 
         if (hEditLog && IsWindow(hEditLog)) {
-            // ZnajdŸ najni¿sz¹ kontrolkê argumentów
+            // Znajdï¿½ najniï¿½szï¿½ kontrolkï¿½ argumentï¿½w
             int maxY = 60 + (int)argEdits.size() * 28 + 40;
 
             SetWindowPos(hEditLog, NULL,
@@ -287,7 +292,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     }
 
     case WM_DESTROY:
-        // Zniszcz wszystkie kontrolki przed zamkniêciem
+        // Zniszcz wszystkie kontrolki przed zamkniï¿½ciem
         DestroyAllArgControls();
         PostQuitMessage(0);
         break;

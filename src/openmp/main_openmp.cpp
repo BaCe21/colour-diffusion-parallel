@@ -5,134 +5,199 @@
 #include <chrono>
 #include <cmath>
 #include <cstring>
+#include <algorithm>
 #include <omp.h>
-#include <algorithm>  
-#include <iomanip>    
+#include <filesystem>
+#include <numeric>
 
-struct Pixel { float r, g, b; };
+namespace fs = std::filesystem;
 
-static inline void clamp01(float &x) { if (x < 0.f) x = 0.f; if (x > 1.f) x = 1.f; }
+struct float3f { float x, y, z; };
 
-void save_ppm(const std::string &filename, const std::vector<Pixel>& grid, int w, int h) {
-    std::ofstream f(filename, std::ios::binary);
-    f << "P6\n" << w << " " << h << "\n255\n";
-    for (int i = 0; i < w*h; ++i) {
-        unsigned char r = (unsigned char)std::lround(std::max(0.f, std::min(1.f, grid[i].r)) * 255.0f);
-        unsigned char g = (unsigned char)std::lround(std::max(0.f, std::min(1.f, grid[i].g)) * 255.0f);
-        unsigned char b = (unsigned char)std::lround(std::max(0.f, std::min(1.f, grid[i].b)) * 255.0f);
-        f.put((char)r); f.put((char)g); f.put((char)b);
+// ---------------------------------------------
+// Funkcje pomocnicze
+// ---------------------------------------------
+
+void write_ppm(const std::string& path, const std::vector<float3f>& buf, int W, int H) {
+    FILE* f = fopen(path.c_str(), "wb");
+    if (!f) return;
+    fprintf(f, "P6\n%d %d\n255\n", W, H);
+    for (int i = 0; i < W * H; ++i) {
+        unsigned char r = (unsigned char)(fminf(1.f, buf[i].x) * 255.0f);
+        unsigned char g = (unsigned char)(fminf(1.f, buf[i].y) * 255.0f);
+        unsigned char b = (unsigned char)(fminf(1.f, buf[i].z) * 255.0f);
+        fwrite(&r, 1, 1, f); fwrite(&g, 1, 1, f); fwrite(&b, 1, 1, f);
     }
-    f.close();
+    fclose(f);
 }
 
-int main(int argc, char** argv) {
-    // Default parameters
-    int N = 1000;
-    int iters = 500;
-    int save_interval = 0; 
-    int threads = 0;     
-    int stencil = 5;    
-
-    for (int i=1;i<argc;i++){
-        if (strcmp(argv[i], "--size")==0 && i+1<argc) N = atoi(argv[++i]);
-        else if (strcmp(argv[i], "--iters")==0 && i+1<argc) iters = atoi(argv[++i]);
-        else if (strcmp(argv[i], "--save")==0 && i+1<argc) save_interval = atoi(argv[++i]);
-        else if (strcmp(argv[i], "--threads")==0 && i+1<argc) threads = atoi(argv[++i]);
-        else if (strcmp(argv[i], "--stencil")==0 && i+1<argc) stencil = atoi(argv[++i]);
-        else if (strcmp(argv[i], "--help")==0) {
-            std::cout << "Usage: --size N --iters K --save interval --threads T --stencil 5|9\n";
-            return 0;
-        }
+void parse_args(int argc, char** argv,
+    int& W, int& H, int& steps, int& save_every, std::string& outdir, int& repeat, int& threads)
+{
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "--w") && i + 1 < argc) W = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--h") && i + 1 < argc) H = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--steps") && i + 1 < argc) steps = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--save_every") && i + 1 < argc) save_every = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--outdir") && i + 1 < argc) outdir = argv[++i];
+        else if (!strcmp(argv[i], "--repeat") && i + 1 < argc) repeat = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--threads") && i + 1 < argc) threads = atoi(argv[++i]);
     }
+}
 
-    if (threads > 0) omp_set_num_threads(threads);
-    int used_threads = omp_get_max_threads();
+// ---------------------------------------------
+// Logika Fizyczna (Identyczna jak CUDA)
+// ---------------------------------------------
 
-    std::cout << "Grid: " << N << "x" << N << ", iters=" << iters
-              << ", stencil=" << stencil << ", threads=" << used_threads
-              << ", save_interval=" << save_interval << "\n";
+void place_sources(std::vector<float3f>& buf, int W, int H) {
+    // Reset
+    std::fill(buf.begin(), buf.end(), float3f{0.f, 0.f, 0.f});
 
-    std::vector<Pixel> grid(N * N);
-    std::vector<Pixel> newgrid(N * N);
+    const float beta = 4.0f;
+    const float intensity = 1.8f;
 
-    // initialize: background black (0,0,0), add a few color sources
-    auto set_px = [&](int x, int y, float r, float g, float b){
-        if (x>=0 && x<N && y>=0 && y<N) grid[y*N + x].r = r, grid[y*N + x].g = g, grid[y*N + x].b = b;
+    auto put = [&](int cx, int cy, float r, float g, float b, int radius) {
+        const int r2 = radius * radius;
+        // OpenMP tutaj przyspieszy inicjalizację
+        #pragma omp parallel for collapse(2)
+        for (int y = cy - radius; y <= cy + radius; ++y) {
+            for (int x = cx - radius; x <= cx + radius; ++x) {
+                if (x < 0 || x >= W || y < 0 || y >= H) continue;
+                
+                int dx = x - cx;
+                int dy = y - cy;
+                int d2 = dx * dx + dy * dy;
+                
+                if (d2 > r2) continue;
+
+                float dist = sqrtf((float)d2);
+                float t = dist / (float)radius;
+                float w = 1.0f + (beta - 1.0f) * t;
+                float f = w * intensity;
+
+                int idx = y * W + x;
+                // Uwaga: przy nakładaniu się źródeł wyścig wątków jest możliwy, 
+                // ale rzadki i mało istotny wizualnie. Dla 100% poprawności można użyć atomic,
+                // ale tu zostawiamy tak dla szybkości (lub single thread wewnątrz put).
+                buf[idx].x += r * f;
+                buf[idx].y += g * f;
+                buf[idx].z += b * f;
+            }
+        }
     };
 
-    // sources: center red, top-left green, bottom-right blue
-    set_px(N/2, N/2, 1.f, 0.f, 0.f);
-    set_px(N/4, N/4, 0.f, 1.f, 0.f);
-    set_px(3*N/4, 3*N/4, 0.f, 0.f, 1.f);
+    put(W / 4, H / 3, 1.f, 0.f, 0.f, 150);
+    put(3 * W / 4, 2 * H / 3, 0.f, 1.f, 0.f, 150);
+    put(W / 2, H / 2, 0.f, 0.f, 1.f, 150);
+}
 
-    // small disk sources to make effect visible
-    int radius = std::max(1, N/100);
-    for (int dy=-radius; dy<=radius; ++dy)
-    for (int dx=-radius; dx<=radius; ++dx) {
-        if (dx*dx + dy*dy <= radius*radius) {
-            set_px(N/2+dx, N/2+dy, 1.f, 0.f, 0.f);
-            set_px(N/4+dx, N/4+dy, 0.f, 1.f, 0.f);
-            set_px(3*N/4+dx, 3*N/4+dy, 0.f, 0.f, 1.f);
-        }
+// Helper do krawędzi
+inline int clamp_i(int v, int max_v) {
+    if (v < 0) return 0;
+    if (v >= max_v) return max_v - 1;
+    return v;
+}
+
+// ---------------------------------------------
+// Main
+// ---------------------------------------------
+int main(int argc, char** argv) {
+    int W = 1000, H = 1000, steps = 100000;
+    int save_every = 500;
+    int repeat = 1;
+    int threads = 0; // 0 = auto
+    std::string outdir = "frames_omp";
+
+    parse_args(argc, argv, W, H, steps, save_every, outdir, repeat, threads);
+
+    // Konfiguracja OpenMP
+    if (threads > 0) {
+        omp_set_num_threads(threads);
+    } else {
+        threads = omp_get_max_threads();
     }
 
-    auto t0 = std::chrono::high_resolution_clock::now();
+    std::cout << "OpenMP Run: " << threads << " threads, Grid: " << W << "x" << H << std::endl;
 
-    // main iteration loop
-    for (int it=0; it<iters; ++it) {
-        // interior only; keep border fixed (zero) for simplicity
-        #pragma omp parallel for schedule(static)
-        for (int y=1; y<N-1; ++y) {
-            int base = y * N;
-            for (int x=1; x<N-1; ++x) {
-                Pixel acc{0.f,0.f,0.f};
-                float count = 0.f;
+    if (!fs::exists(outdir)) fs::create_directories(outdir);
 
-                // include center
-                acc.r += grid[base + x].r;
-                acc.g += grid[base + x].g;
-                acc.b += grid[base + x].b;
-                count += 1.f;
+    // Bufory
+    std::vector<float3f> grid_curr(W * H);
+    std::vector<float3f> grid_next(W * H);
 
-                // 4-neighbors
-                acc.r += grid[base + (x-1)].r; acc.g += grid[base + (x-1)].g; acc.b += grid[base + (x-1)].b; count += 1.f;
-                acc.r += grid[base + (x+1)].r; acc.g += grid[base + (x+1)].g; acc.b += grid[base + (x+1)].b; count += 1.f;
-                acc.r += grid[(y-1)*N + x].r; acc.g += grid[(y-1)*N + x].g; acc.b += grid[(y-1)*N + x].b; count += 1.f;
-                acc.r += grid[(y+1)*N + x].r; acc.g += grid[(y+1)*N + x].g; acc.b += grid[(y+1)*N + x].b; count += 1.f;
+    std::vector<double> timings;
+    std::string csv_filename = "diffusion_omp_" + std::to_string(threads) + "thr_" +
+                               std::to_string(W) + "x" + std::to_string(H) + ".csv";
 
-                if (stencil == 9) {
-                    // add diagonals
-                    acc.r += grid[(y-1)*N + (x-1)].r; acc.g += grid[(y-1)*N + (x-1)].g; acc.b += grid[(y-1)*N + (x-1)].b; count += 1.f;
-                    acc.r += grid[(y-1)*N + (x+1)].r; acc.g += grid[(y-1)*N + (x+1)].g; acc.b += grid[(y-1)*N + (x+1)].b; count += 1.f;
-                    acc.r += grid[(y+1)*N + (x-1)].r; acc.g += grid[(y+1)*N + (x-1)].g; acc.b += grid[(y+1)*N + (x-1)].b; count += 1.f;
-                    acc.r += grid[(y+1)*N + (x+1)].r; acc.g += grid[(y+1)*N + (x+1)].g; acc.b += grid[(y+1)*N + (x+1)].b; count += 1.f;
+    // Pętla benchmarkowa
+    for (int run = 0; run < repeat; ++run) {
+        std::cout << "Run " << (run + 1) << "/" << repeat << "... " << std::flush;
+
+        // Inicjalizacja
+        place_sources(grid_curr, W, H);
+        grid_next = grid_curr;
+
+        auto t0 = std::chrono::high_resolution_clock::now();
+
+        // Główna pętla symulacji
+        for (int s = 0; s < steps; ++s) {
+            
+            // Równoległe przetwarzanie wierszy
+            #pragma omp parallel for schedule(static)
+            for (int y = 0; y < H; ++y) {
+                for (int x = 0; x < W; ++x) {
+                    float sum_x = 0, sum_y = 0, sum_z = 0;
+
+                    // 9-point stencil
+                    for (int dy = -1; dy <= 1; ++dy) {
+                        for (int dx = -1; dx <= 1; ++dx) {
+                            int cy = clamp_i(y + dy, H);
+                            int cx = clamp_i(x + dx, W);
+                            
+                            float3f v = grid_curr[cy * W + cx];
+                            sum_x += v.x;
+                            sum_y += v.y;
+                            sum_z += v.z;
+                        }
+                    }
+
+                    grid_next[y * W + x] = { sum_x / 9.0f, sum_y / 9.0f, sum_z / 9.0f };
                 }
+            }
 
-                newgrid[base + x].r = acc.r / count;
-                newgrid[base + x].g = acc.g / count;
-                newgrid[base + x].b = acc.b / count;
+            // Swap
+            std::swap(grid_curr, grid_next);
+
+            // Zapis
+            if (save_every > 0 && s % save_every == 0) {
+                char path[256];
+                sprintf(path, "%s/frame_%06d.ppm", outdir.c_str(), s);
+                write_ppm(path, grid_curr, W, H);
             }
         }
 
-        // swap buffers
-        std::swap(grid, newgrid);
-
-        // optional: save intermediate frames
-        if (save_interval > 0 && ((it+1) % save_interval == 0)) {
-            std::ostringstream ss; ss << "frame_" << std::setfill('0') << std::setw(4) << (it+1) << ".ppm";
-            save_ppm(ss.str(), grid, N, N);
-        }
+        auto t1 = std::chrono::high_resolution_clock::now();
+        double dt = std::chrono::duration<double>(t1 - t0).count();
+        timings.push_back(dt);
+        std::cout << "Done in " << dt << "s" << std::endl;
     }
 
-    auto t1 = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = t1 - t0;
+    // Zapis statystyk do CSV
+    double avg = 0, min_t = timings[0], max_t = timings[0];
+    for(double t : timings) {
+        avg += t;
+        if(t < min_t) min_t = t;
+        if(t > max_t) max_t = t;
+    }
+    avg /= timings.size();
 
-    std::cout << "Done. Time: " << elapsed.count() << " s\n";
-    double cells = double(N) * double(N) * double(iters);
-    std::cout << "Throughput: " << (cells / elapsed.count()) / 1e6 << " Mcells/s\n";
+    std::ofstream csv(csv_filename);
+    csv << "Run,Time(s)\n";
+    for(size_t i=0; i<timings.size(); i++) csv << (i+1) << "," << timings[i] << "\n";
+    csv << "\nStats\nAverage," << avg << "\nMin," << min_t << "\nMax," << max_t << "\n";
+    csv.close();
 
-    // save final image
-    save_ppm("final.ppm", grid, N, N);
-    std::cout << "Wrote final.ppm\n";
+    std::cout << "Results saved to " << csv_filename << std::endl;
+
     return 0;
 }

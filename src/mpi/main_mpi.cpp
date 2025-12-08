@@ -1,191 +1,271 @@
-// src/mpi/main_mpi.cpp
-// MPI implementation of 2D color diffusion (row-wise domain decomposition).
-
 #include <mpi.h>
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <iomanip>
 #include <cmath>
 #include <cstring>
-#include <filesystem>   // C++17
+#include <filesystem>
+#include <algorithm>
+#include <numeric>
+
 namespace fs = std::filesystem;
 
-struct Pixel { float r, g, b; };
-static inline void clamp01(float &x) { if (x < 0.f) x = 0.f; if (x > 1.f) x = 1.f; }
+// Ujednolicamy strukturę danych z wersją CUDA
+struct float3f { float x, y, z; };
 
-void save_ppm(const std::string &filename, const std::vector<Pixel>& grid, int w, int h) {
-    std::ofstream f(filename, std::ios::binary);
-    f << "P6\n" << w << " " << h << "\n255\n";
-    for (int i = 0; i < w*h; ++i) {
-        unsigned char r = (unsigned char)std::lround(std::max(0.f,std::min(1.f,grid[i].r))*255.0f);
-        unsigned char g = (unsigned char)std::lround(std::max(0.f,std::min(1.f,grid[i].g))*255.0f);
-        unsigned char b = (unsigned char)std::lround(std::max(0.f,std::min(1.f,grid[i].b))*255.0f);
-        f.put((char)r); f.put((char)g); f.put((char)b);
+// ---------------------------------------------
+// Funkcje pomocnicze (I/O, Argumenty)
+// ---------------------------------------------
+
+void write_ppm(const std::string& path, const std::vector<float3f>& buf, int W, int H) {
+    FILE* f = fopen(path.c_str(), "wb");
+    if (!f) return;
+    fprintf(f, "P6\n%d %d\n255\n", W, H);
+    for (int i = 0; i < W * H; ++i) {
+        unsigned char r = (unsigned char)(fminf(1.f, buf[i].x) * 255.0f);
+        unsigned char g = (unsigned char)(fminf(1.f, buf[i].y) * 255.0f);
+        unsigned char b = (unsigned char)(fminf(1.f, buf[i].z) * 255.0f);
+        fwrite(&r, 1, 1, f); fwrite(&g, 1, 1, f); fwrite(&b, 1, 1, f);
     }
-    f.close();
+    fclose(f);
 }
 
+void parse_args(int argc, char** argv,
+    int& W, int& H, int& steps, int& save_every, std::string& outdir, int& repeat)
+{
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "--w") && i + 1 < argc) W = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--h") && i + 1 < argc) H = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--steps") && i + 1 < argc) steps = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--save_every") && i + 1 < argc) save_every = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--outdir") && i + 1 < argc) outdir = argv[++i];
+        else if (!strcmp(argv[i], "--repeat") && i + 1 < argc) repeat = atoi(argv[++i]);
+    }
+}
+
+// ---------------------------------------------
+// Logika Fizyczna (Identyczna jak w CUDA)
+// ---------------------------------------------
+
+// Inicjalizacja źródeł - wersja MPI (działa na lokalnym wycinku)
+void init_local_sources(std::vector<float3f>& local_grid, int W, int H, 
+                       int start_row, int local_rows, int halo_rows) {
+    
+    // Czyścimy siatkę
+    std::fill(local_grid.begin(), local_grid.end(), float3f{0.f, 0.f, 0.f});
+
+    const float beta = 4.0f;
+    const float intensity = 1.8f;
+
+    // Lambda "put" taka sama jak w CUDA, ale sprawdza czy punkt jest w naszym zakresie
+    auto put = [&](int cx, int cy, float r, float g, float b, int radius) {
+        const int r2 = radius * radius;
+        // Sprawdzamy zakres Y tylko w obrębie tego procesu (plus halo)
+        int min_y = std::max(cy - radius, start_row - 1); // -1 bo halo
+        int max_y = std::min(cy + radius, start_row + local_rows); // +1 halo
+
+        for (int gy = min_y; gy <= max_y; ++gy) {
+            // Przelicz globalne Y na lokalne Y w buforze (z uwzględnieniem halo = 1)
+            int ly = gy - start_row + 1; 
+            
+            // Jeśli ly wykracza poza bufor (np. przez szerokie halo w logice), pomiń
+            if (ly < 0 || ly >= local_rows + 2) continue;
+
+            for (int gx = cx - radius; gx <= cx + radius; ++gx) {
+                if (gx < 0 || gx >= W) continue;
+                
+                int dx = gx - cx;
+                int dy = gy - cy;
+                int d2 = dx * dx + dy * dy;
+                
+                if (d2 > r2) continue;
+
+                float dist = sqrtf((float)d2);
+                float t = dist / (float)radius;
+                float w = 1.0f + (beta - 1.0f) * t;
+                float f = w * intensity;
+
+                int idx = ly * W + gx;
+                local_grid[idx].x += r * f;
+                local_grid[idx].y += g * f;
+                local_grid[idx].z += b * f;
+            }
+        }
+    };
+
+    // Te same źródła co w CUDA
+    put(W / 4, H / 3, 1.f, 0.f, 0.f, 150);
+    put(3 * W / 4, 2 * H / 3, 0.f, 1.f, 0.f, 150);
+    put(W / 2, H / 2, 0.f, 0.f, 1.f, 150);
+}
+
+// ---------------------------------------------
+// Main
+// ---------------------------------------------
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
 
-    int rank = 0, size = 1;
+    int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    int N = 1000, iters = 500, save_interval = 0, stencil = 5;
+    // Domyślne parametry (zgodne z CUDA)
+    int W = 1000, H = 1000, steps = 100000;
+    int save_every = 500;
+    int repeat = 1;
+    std::string outdir = "frames_mpi";
 
-    for (int i=1;i<argc;i++){
-        if (strcmp(argv[i], "--size")==0 && i+1<argc) N = atoi(argv[++i]);
-        else if (strcmp(argv[i], "--iters")==0 && i+1<argc) iters = atoi(argv[++i]);
-        else if (strcmp(argv[i], "--save_interval")==0 && i+1<argc) save_interval = atoi(argv[++i]);
-        else if (strcmp(argv[i], "--stencil")==0 && i+1<argc) stencil = atoi(argv[++i]);
-        else if (strcmp(argv[i], "--help")==0) {
-            if(rank==0) std::cout << "Usage: --size N --iters K --save_interval M --stencil 5|9\n";
-            MPI_Finalize(); return 0;
+    parse_args(argc, argv, W, H, steps, save_every, outdir, repeat);
+
+    // Tworzenie katalogu tylko przez mastera
+    if (rank == 0) {
+        if (!fs::exists(outdir)) fs::create_directories(outdir);
+        // Generujemy nazwę pliku CSV
+        std::string csv_filename = "diffusion_mpi_" + std::to_string(size) + "ranks_" +
+                                   std::to_string(W) + "x" + std::to_string(H) + ".csv";
+        std::cout << "MPI Run: " << size << " ranks, Grid: " << W << "x" << H << std::endl;
+        std::cout << "Logging to: " << csv_filename << std::endl;
+    }
+
+    // Dekompozycja wierszowa
+    int base_rows = H / size;
+    int remainder = H % size;
+    int my_rows = base_rows + (rank < remainder ? 1 : 0);
+    
+    // Obliczanie globalnego offsetu wierszy
+    int my_start_row = 0;
+    for (int r = 0; r < rank; ++r) {
+        my_start_row += base_rows + (r < remainder ? 1 : 0);
+    }
+
+    // Bufor z halo (1 wiersz góra, 1 dół)
+    int halo_rows = 2; 
+    int buffer_height = my_rows + halo_rows;
+    size_t buffer_size = (size_t)buffer_height * W;
+
+    std::vector<float3f> grid_curr(buffer_size);
+    std::vector<float3f> grid_next(buffer_size);
+
+    // Struktury do gatherowania wyników (tylko na rank 0)
+    std::vector<int> recvcounts(size);
+    std::vector<int> displs(size);
+    if (rank == 0) {
+        int offset = 0;
+        for (int r = 0; r < size; ++r) {
+            int rows = base_rows + (r < remainder ? 1 : 0);
+            recvcounts[r] = rows * W * 3; // *3 bo float3f to 3 floaty
+            displs[r] = offset;
+            offset += recvcounts[r];
         }
     }
 
-    if(rank==0) {
-        std::cout << "MPI size: " << size << ", Grid: " << N << "x" << N
-                  << ", iters=" << iters << ", stencil=" << stencil << "\n";
-        if(save_interval>0 && !fs::exists("frames")) fs::create_directory("frames");
-    }
+    std::vector<double> timings;
 
-    // row decomposition
-    int base = N / size;
-    int rem = N % size;
-    int local_rows = base + (rank<rem ? 1:0);
-    int buf_rows = local_rows + 2; // halo
-    int cols = N;
+    // Pętla powtórzeń (Benchmark)
+    for (int run = 0; run < repeat; ++run) {
+        if(rank == 0) std::cout << "Run " << (run+1) << "/" << repeat << "... " << std::flush;
+        
+        // Inicjalizacja stanu początkowego
+        init_local_sources(grid_curr, W, H, my_start_row, my_rows, halo_rows);
+        grid_next = grid_curr; // Kopia
 
-    // offsets for gathering
-    std::vector<int> recvcounts(size), displs(size);
-    for(int r=0, offset=0;r<size;++r){
-        int rows_r = base + (r<rem?1:0);
-        recvcounts[r] = rows_r * cols;
-        displs[r] = offset;
-        offset += recvcounts[r];
-    }
+        MPI_Barrier(MPI_COMM_WORLD);
+        double t0 = MPI_Wtime();
 
-    // allocate grids
-    std::vector<Pixel> grid(buf_rows*cols), newgrid(buf_rows*cols);
-    auto idx = [&](int y,int x){ return y*cols + x; };
+        for (int s = 0; s < steps; ++s) {
+            // 1. Wymiana Halo (Sendrecv)
+            int top_neighbor = (rank == 0) ? MPI_PROC_NULL : rank - 1;
+            int bot_neighbor = (rank == size - 1) ? MPI_PROC_NULL : rank + 1;
 
-    // helper to set pixel on global grid
-    auto set_global_px = [&](int gx,int gy,float r,float g,float b){
-        if(gx<0||gx>=N||gy<0||gy>=N) return;
-        int start_row = 0;
-        for(int rr=0;rr<rank;++rr) start_row += base + (rr<rem?1:0);
-        int local_y = gy - start_row;
-        if(local_y>=0 && local_y<local_rows){
-            grid[idx(local_y+1,gx)] = {r,g,b};
-        }
-    };
+            // Wyślij mój pierwszy wiersz danych (index 1) do góry, odbierz od dołu do halo (index my_rows+1)
+            MPI_Sendrecv(
+                &grid_curr[1 * W], W * 3, MPI_FLOAT, top_neighbor, 0,
+                &grid_curr[(my_rows + 1) * W], W * 3, MPI_FLOAT, bot_neighbor, 0,
+                MPI_COMM_WORLD, MPI_STATUS_IGNORE
+            );
 
-    // initial sources
-    std::vector<std::tuple<int,int,float,float,float>> sources = {
-        {N/2,N/2,1.f,0.f,0.f},
-        {N/4,N/4,0.f,1.f,0.f},
-        {3*N/4,3*N/4,0.f,0.f,1.f}
-    };
-    int radius = std::max(1,N/100);
-    for(auto [gx,gy,r,g,b]:sources){
-        for(int dy=-radius;dy<=radius;++dy)
-        for(int dx=-radius;dx<=radius;++dx)
-            if(dx*dx+dy*dy<=radius*radius) set_global_px(gx+dx,gy+dy,r,g,b);
-    }
+            // Wyślij mój ostatni wiersz danych (index my_rows) w dół, odbierz od góry do halo (index 0)
+            MPI_Sendrecv(
+                &grid_curr[my_rows * W], W * 3, MPI_FLOAT, bot_neighbor, 1,
+                &grid_curr[0 * W], W * 3, MPI_FLOAT, top_neighbor, 1,
+                MPI_COMM_WORLD, MPI_STATUS_IGNORE
+            );
 
-    // MPI datatype
-    MPI_Datatype MPI_PIXEL;
-    MPI_Type_contiguous(3,MPI_FLOAT,&MPI_PIXEL);
-    MPI_Type_commit(&MPI_PIXEL);
-
-    MPI_Barrier(MPI_COMM_WORLD);
-    double t0 = MPI_Wtime();
-
-    for(int it=0;it<iters;++it){
-        // restore sources each iteration
-        for(auto [gx,gy,r,g,b]:sources){
-            for(int dy=-radius;dy<=radius;++dy)
-            for(int dx=-radius;dx<=radius;++dx)
-                if(dx*dx+dy*dy<=radius*radius) set_global_px(gx+dx,gy+dy,r,g,b);
-        }
-
-        // halo exchange
-        int top = rank-1, bottom=rank+1;
-        if(top<0) top=MPI_PROC_NULL;
-        if(bottom>=size) bottom=MPI_PROC_NULL;
-
-        MPI_Sendrecv(&grid[idx(1,0)], cols, MPI_PIXEL, top,0,
-                     &grid[idx(0,0)], cols, MPI_PIXEL, top,1,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-        MPI_Sendrecv(&grid[idx(local_rows,0)], cols, MPI_PIXEL, bottom,1,
-                     &grid[idx(local_rows+1,0)], cols, MPI_PIXEL, bottom,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-
-        // update
-        for(int y=1;y<=local_rows;++y){
-            for(int x=0;x<cols;++x){
-                Pixel acc={0.f,0.f,0.f}; float count=0.f;
-                for(int dy=-1;dy<=1;++dy)
-                    for(int dx=-1;dx<=1;++dx){
-                        if(stencil==5 && abs(dy)+abs(dx)>1) continue;
-                        int yy=y+dy, xx=x+dx;
-                        if(yy>=0 && yy<buf_rows && xx>=0 && xx<cols){
-                            acc.r += grid[idx(yy,xx)].r;
-                            acc.g += grid[idx(yy,xx)].g;
-                            acc.b += grid[idx(yy,xx)].b;
-                            count += 1.f;
+            // 2. Obliczenia (Stencil 9-punktowy)
+            // Iterujemy tylko po wierszach własnych (od 1 do my_rows)
+            for (int y = 1; y <= my_rows; ++y) {
+                for (int x = 0; x < W; ++x) {
+                    float sum_x = 0, sum_y = 0, sum_z = 0;
+                    
+                    // Pętla 3x3
+                    for (int dy = -1; dy <= 1; ++dy) {
+                        for (int dx = -1; dx <= 1; ++dx) {
+                            // Warunek brzegowy (clamp X, Y w buforze jest bezpieczny dzięki halo)
+                            int nx = std::max(0, std::min(W - 1, x + dx));
+                            int ny = y + dy; // nie musimy clampować Y, bo mamy halo
+                            
+                            float3f v = grid_curr[ny * W + nx];
+                            sum_x += v.x;
+                            sum_y += v.y;
+                            sum_z += v.z;
                         }
                     }
-                newgrid[idx(y,x)] = {acc.r/count,acc.g/count,acc.b/count};
+                    grid_next[y * W + x] = { sum_x / 9.0f, sum_y / 9.0f, sum_z / 9.0f };
+                }
+            }
+
+            // Swap wskaźników (tutaj swap wektorów jest szybki)
+            std::swap(grid_curr, grid_next);
+
+            // 3. Zapisywanie klatki
+            if (save_every > 0 && s % save_every == 0) {
+                // Zbieranie danych do Rank 0
+                std::vector<float3f> full_grid;
+                if (rank == 0) full_grid.resize(W * H);
+
+                // Wysyłamy tylko "mięso" (bez halo)
+                MPI_Gatherv(
+                    &grid_curr[1 * W], my_rows * W * 3, MPI_FLOAT,
+                    full_grid.data(), recvcounts.data(), displs.data(), MPI_FLOAT,
+                    0, MPI_COMM_WORLD
+                );
+
+                if (rank == 0) {
+                    char path[256];
+                    sprintf(path, "%s/frame_%06d.ppm", outdir.c_str(), s);
+                    write_ppm(path, full_grid, W, H);
+                }
             }
         }
 
-        grid.swap(newgrid);
+        MPI_Barrier(MPI_COMM_WORLD);
+        double t1 = MPI_Wtime();
+        timings.push_back(t1 - t0);
+        if(rank == 0) std::cout << "Done in " << (t1 - t0) << "s" << std::endl;
+    }
 
-        // save frame
-        if(save_interval>0 && ((it+1)%save_interval==0)){
-            std::ostringstream ss;
-            ss << "frames/frame_" << std::setfill('0') << std::setw(5) << (it+1) << ".ppm";
-            // gather full grid to rank 0
-            std::vector<Pixel> local_out(local_rows*cols);
-            for(int y=0;y<local_rows;++y) std::memcpy(&local_out[y*cols],&grid[idx(y+1,0)],sizeof(Pixel)*cols);
-
-            std::vector<Pixel> full;
-            if(rank==0) full.resize(N*N);
-
-            MPI_Gatherv(local_out.data(), local_rows*cols, MPI_PIXEL,
-                        full.data(), recvcounts.data(), displs.data(), MPI_PIXEL,
-                        0,MPI_COMM_WORLD);
-
-            if(rank==0) save_ppm(ss.str(), full, N, N);
+    // Zapis wyników do CSV (tylko rank 0)
+    if (rank == 0) {
+        double avg = 0, min_t = timings[0], max_t = timings[0];
+        for(double t : timings) {
+            avg += t;
+            if(t < min_t) min_t = t;
+            if(t > max_t) max_t = t;
         }
+        avg /= timings.size();
+
+        std::string csv_filename = "diffusion_mpi_" + std::to_string(size) + "ranks_" +
+                                   std::to_string(W) + "x" + std::to_string(H) + "_" + 
+                                   std::to_string(steps) + ".csv";
+        
+        std::ofstream csv(csv_filename);
+        csv << "Run,Time(s)\n";
+        for(size_t i=0; i<timings.size(); i++) csv << (i+1) << "," << timings[i] << "\n";
+        csv << "\nStats\nAverage," << avg << "\nMin," << min_t << "\nMax," << max_t << "\n";
+        csv.close();
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
-    double t1 = MPI_Wtime();
-    double elapsed = t1-t0;
-
-    // gather final grid
-    std::vector<Pixel> local_out(local_rows*cols);
-    for(int y=0;y<local_rows;++y) std::memcpy(&local_out[y*cols],&grid[idx(y+1,0)],sizeof(Pixel)*cols);
-
-    std::vector<Pixel> full;
-    if(rank==0) full.resize(N*N);
-
-    MPI_Gatherv(local_out.data(), local_rows*cols, MPI_PIXEL,
-                full.data(), recvcounts.data(), displs.data(), MPI_PIXEL,
-                0,MPI_COMM_WORLD);
-
-    if(rank==0){
-        double cells = double(N)*double(N)*double(iters);
-        std::cout << "MPI Done. Time: " << elapsed << " s, Throughput: " << (cells/elapsed)/1e6 << " Mcells/s\n";
-        save_ppm("final_mpi.ppm", full, N, N);
-        std::cout << "Wrote final_mpi.ppm\n";
-    }
-
-    MPI_Type_free(&MPI_PIXEL);
     MPI_Finalize();
     return 0;
 }
