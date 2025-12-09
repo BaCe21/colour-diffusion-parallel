@@ -14,9 +14,7 @@ namespace fs = std::filesystem;
 
 struct float3f { float x, y, z; };
 
-// ---------------------------------------------
 // Funkcje pomocnicze
-// ---------------------------------------------
 
 void write_ppm(const std::string& path, const std::vector<float3f>& buf, int W, int H) {
     FILE* f = fopen(path.c_str(), "wb");
@@ -45,12 +43,9 @@ void parse_args(int argc, char** argv,
     }
 }
 
-// ---------------------------------------------
-// Logika Fizyczna (Identyczna jak CUDA)
-// ---------------------------------------------
+// Logika Fizyczna 
 
 void place_sources(std::vector<float3f>& buf, int W, int H) {
-    // Reset
     std::fill(buf.begin(), buf.end(), float3f{0.f, 0.f, 0.f});
 
     const float beta = 4.0f;
@@ -58,7 +53,6 @@ void place_sources(std::vector<float3f>& buf, int W, int H) {
 
     auto put = [&](int cx, int cy, float r, float g, float b, int radius) {
         const int r2 = radius * radius;
-        // OpenMP tutaj przyspieszy inicjalizację
         #pragma omp parallel for collapse(2)
         for (int y = cy - radius; y <= cy + radius; ++y) {
             for (int x = cx - radius; x <= cx + radius; ++x) {
@@ -76,9 +70,6 @@ void place_sources(std::vector<float3f>& buf, int W, int H) {
                 float f = w * intensity;
 
                 int idx = y * W + x;
-                // Uwaga: przy nakładaniu się źródeł wyścig wątków jest możliwy, 
-                // ale rzadki i mało istotny wizualnie. Dla 100% poprawności można użyć atomic,
-                // ale tu zostawiamy tak dla szybkości (lub single thread wewnątrz put).
                 buf[idx].x += r * f;
                 buf[idx].y += g * f;
                 buf[idx].z += b * f;
@@ -91,16 +82,13 @@ void place_sources(std::vector<float3f>& buf, int W, int H) {
     put(W / 2, H / 2, 0.f, 0.f, 1.f, 150);
 }
 
-// Helper do krawędzi
 inline int clamp_i(int v, int max_v) {
     if (v < 0) return 0;
     if (v >= max_v) return max_v - 1;
     return v;
 }
 
-// ---------------------------------------------
 // Main
-// ---------------------------------------------
 int main(int argc, char** argv) {
     int W = 1000, H = 1000, steps = 100000;
     int save_every = 500;
@@ -129,26 +117,21 @@ int main(int argc, char** argv) {
     std::string csv_filename = "diffusion_omp_" + std::to_string(threads) + "thr_" +
                                std::to_string(W) + "x" + std::to_string(H) + ".csv";
 
-    // Pętla benchmarkowa
     for (int run = 0; run < repeat; ++run) {
         std::cout << "Run " << (run + 1) << "/" << repeat << "... " << std::flush;
 
-        // Inicjalizacja
         place_sources(grid_curr, W, H);
         grid_next = grid_curr;
 
         auto t0 = std::chrono::high_resolution_clock::now();
 
-        // Główna pętla symulacji
         for (int s = 0; s < steps; ++s) {
             
-            // Równoległe przetwarzanie wierszy
             #pragma omp parallel for schedule(static)
             for (int y = 0; y < H; ++y) {
                 for (int x = 0; x < W; ++x) {
                     float sum_x = 0, sum_y = 0, sum_z = 0;
 
-                    // 9-point stencil
                     for (int dy = -1; dy <= 1; ++dy) {
                         for (int dx = -1; dx <= 1; ++dx) {
                             int cy = clamp_i(y + dy, H);

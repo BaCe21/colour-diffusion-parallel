@@ -11,13 +11,9 @@
 
 namespace fs = std::filesystem;
 
-// Ujednolicamy strukturę danych z wersją CUDA
 struct float3f { float x, y, z; };
 
-// ---------------------------------------------
-// Funkcje pomocnicze (I/O, Argumenty)
-// ---------------------------------------------
-
+// Funkcje pomocnicze 
 void write_ppm(const std::string& path, const std::vector<float3f>& buf, int W, int H) {
     FILE* f = fopen(path.c_str(), "wb");
     if (!f) return;
@@ -44,32 +40,25 @@ void parse_args(int argc, char** argv,
     }
 }
 
-// ---------------------------------------------
-// Logika Fizyczna (Identyczna jak w CUDA)
-// ---------------------------------------------
 
-// Inicjalizacja źródeł - wersja MPI (działa na lokalnym wycinku)
+
+// Inicjalizacja źródeł 
 void init_local_sources(std::vector<float3f>& local_grid, int W, int H, 
                        int start_row, int local_rows, int halo_rows) {
     
-    // Czyścimy siatkę
     std::fill(local_grid.begin(), local_grid.end(), float3f{0.f, 0.f, 0.f});
 
     const float beta = 4.0f;
     const float intensity = 1.8f;
 
-    // Lambda "put" taka sama jak w CUDA, ale sprawdza czy punkt jest w naszym zakresie
     auto put = [&](int cx, int cy, float r, float g, float b, int radius) {
         const int r2 = radius * radius;
-        // Sprawdzamy zakres Y tylko w obrębie tego procesu (plus halo)
-        int min_y = std::max(cy - radius, start_row - 1); // -1 bo halo
-        int max_y = std::min(cy + radius, start_row + local_rows); // +1 halo
+        int min_y = std::max(cy - radius, start_row - 1); 
+        int max_y = std::min(cy + radius, start_row + local_rows); 
 
         for (int gy = min_y; gy <= max_y; ++gy) {
-            // Przelicz globalne Y na lokalne Y w buforze (z uwzględnieniem halo = 1)
             int ly = gy - start_row + 1; 
             
-            // Jeśli ly wykracza poza bufor (np. przez szerokie halo w logice), pomiń
             if (ly < 0 || ly >= local_rows + 2) continue;
 
             for (int gx = cx - radius; gx <= cx + radius; ++gx) {
@@ -94,15 +83,12 @@ void init_local_sources(std::vector<float3f>& local_grid, int W, int H,
         }
     };
 
-    // Te same źródła co w CUDA
     put(W / 4, H / 3, 1.f, 0.f, 0.f, 150);
     put(3 * W / 4, 2 * H / 3, 0.f, 1.f, 0.f, 150);
     put(W / 2, H / 2, 0.f, 0.f, 1.f, 150);
 }
 
-// ---------------------------------------------
-// Main
-// ---------------------------------------------
+
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
 
@@ -110,7 +96,6 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    // Domyślne parametry (zgodne z CUDA)
     int W = 1000, H = 1000, steps = 100000;
     int save_every = 500;
     int repeat = 1;
@@ -118,28 +103,23 @@ int main(int argc, char** argv) {
 
     parse_args(argc, argv, W, H, steps, save_every, outdir, repeat);
 
-    // Tworzenie katalogu tylko przez mastera
     if (rank == 0) {
         if (!fs::exists(outdir)) fs::create_directories(outdir);
-        // Generujemy nazwę pliku CSV
         std::string csv_filename = "diffusion_mpi_" + std::to_string(size) + "ranks_" +
                                    std::to_string(W) + "x" + std::to_string(H) + ".csv";
         std::cout << "MPI Run: " << size << " ranks, Grid: " << W << "x" << H << std::endl;
         std::cout << "Logging to: " << csv_filename << std::endl;
     }
 
-    // Dekompozycja wierszowa
     int base_rows = H / size;
     int remainder = H % size;
     int my_rows = base_rows + (rank < remainder ? 1 : 0);
     
-    // Obliczanie globalnego offsetu wierszy
     int my_start_row = 0;
     for (int r = 0; r < rank; ++r) {
         my_start_row += base_rows + (r < remainder ? 1 : 0);
     }
 
-    // Bufor z halo (1 wiersz góra, 1 dół)
     int halo_rows = 2; 
     int buffer_height = my_rows + halo_rows;
     size_t buffer_size = (size_t)buffer_height * W;
@@ -147,14 +127,13 @@ int main(int argc, char** argv) {
     std::vector<float3f> grid_curr(buffer_size);
     std::vector<float3f> grid_next(buffer_size);
 
-    // Struktury do gatherowania wyników (tylko na rank 0)
     std::vector<int> recvcounts(size);
     std::vector<int> displs(size);
     if (rank == 0) {
         int offset = 0;
         for (int r = 0; r < size; ++r) {
             int rows = base_rows + (r < remainder ? 1 : 0);
-            recvcounts[r] = rows * W * 3; // *3 bo float3f to 3 floaty
+            recvcounts[r] = rows * W * 3; 
             displs[r] = offset;
             offset += recvcounts[r];
         }
@@ -162,38 +141,33 @@ int main(int argc, char** argv) {
 
     std::vector<double> timings;
 
-    // Pętla powtórzeń (Benchmark)
+    // Pętla powtórzeń 
     for (int run = 0; run < repeat; ++run) {
         if(rank == 0) std::cout << "Run " << (run+1) << "/" << repeat << "... " << std::flush;
         
-        // Inicjalizacja stanu początkowego
         init_local_sources(grid_curr, W, H, my_start_row, my_rows, halo_rows);
-        grid_next = grid_curr; // Kopia
+        grid_next = grid_curr;
 
         MPI_Barrier(MPI_COMM_WORLD);
         double t0 = MPI_Wtime();
 
         for (int s = 0; s < steps; ++s) {
-            // 1. Wymiana Halo (Sendrecv)
             int top_neighbor = (rank == 0) ? MPI_PROC_NULL : rank - 1;
             int bot_neighbor = (rank == size - 1) ? MPI_PROC_NULL : rank + 1;
 
-            // Wyślij mój pierwszy wiersz danych (index 1) do góry, odbierz od dołu do halo (index my_rows+1)
             MPI_Sendrecv(
                 &grid_curr[1 * W], W * 3, MPI_FLOAT, top_neighbor, 0,
                 &grid_curr[(my_rows + 1) * W], W * 3, MPI_FLOAT, bot_neighbor, 0,
                 MPI_COMM_WORLD, MPI_STATUS_IGNORE
             );
 
-            // Wyślij mój ostatni wiersz danych (index my_rows) w dół, odbierz od góry do halo (index 0)
             MPI_Sendrecv(
                 &grid_curr[my_rows * W], W * 3, MPI_FLOAT, bot_neighbor, 1,
                 &grid_curr[0 * W], W * 3, MPI_FLOAT, top_neighbor, 1,
                 MPI_COMM_WORLD, MPI_STATUS_IGNORE
             );
 
-            // 2. Obliczenia (Stencil 9-punktowy)
-            // Iterujemy tylko po wierszach własnych (od 1 do my_rows)
+            // 2. Obliczenia
             for (int y = 1; y <= my_rows; ++y) {
                 for (int x = 0; x < W; ++x) {
                     float sum_x = 0, sum_y = 0, sum_z = 0;
@@ -201,9 +175,9 @@ int main(int argc, char** argv) {
                     // Pętla 3x3
                     for (int dy = -1; dy <= 1; ++dy) {
                         for (int dx = -1; dx <= 1; ++dx) {
-                            // Warunek brzegowy (clamp X, Y w buforze jest bezpieczny dzięki halo)
+                           
                             int nx = std::max(0, std::min(W - 1, x + dx));
-                            int ny = y + dy; // nie musimy clampować Y, bo mamy halo
+                            int ny = y + dy;
                             
                             float3f v = grid_curr[ny * W + nx];
                             sum_x += v.x;
@@ -215,16 +189,14 @@ int main(int argc, char** argv) {
                 }
             }
 
-            // Swap wskaźników (tutaj swap wektorów jest szybki)
             std::swap(grid_curr, grid_next);
 
             // 3. Zapisywanie klatki
             if (save_every > 0 && s % save_every == 0) {
-                // Zbieranie danych do Rank 0
+
                 std::vector<float3f> full_grid;
                 if (rank == 0) full_grid.resize(W * H);
 
-                // Wysyłamy tylko "mięso" (bez halo)
                 MPI_Gatherv(
                     &grid_curr[1 * W], my_rows * W * 3, MPI_FLOAT,
                     full_grid.data(), recvcounts.data(), displs.data(), MPI_FLOAT,
@@ -245,7 +217,7 @@ int main(int argc, char** argv) {
         if(rank == 0) std::cout << "Done in " << (t1 - t0) << "s" << std::endl;
     }
 
-    // Zapis wyników do CSV (tylko rank 0)
+    // Zapis wyników do CSV
     if (rank == 0) {
         double avg = 0, min_t = timings[0], max_t = timings[0];
         for(double t : timings) {
