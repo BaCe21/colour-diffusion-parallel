@@ -234,6 +234,7 @@ int main(int argc, char** argv) {
                 printf("step %d total energy: %.6f\n", s, total);
             }
         }
+		CHECK_CUDA(cudaDeviceSynchronize());
         auto t1 = std::chrono::high_resolution_clock::now();
         double secs = std::chrono::duration<double>(t1 - t0).count();
 

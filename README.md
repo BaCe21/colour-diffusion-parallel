@@ -1,35 +1,58 @@
 # Parallel Color Diffusion Simulation
-
-This repository contains a high-performance simulation of color diffusion across a 2D grid, demonstrating the application of parallel computing techniques to computationally intensive grid-based algorithms. 
-
-The simulation models the iterative spread and averaging of RGB values (representing intensity or heat) from initial light/color sources placed within the environment. This type of cellular automata / convolution logic is fundamental in computational physics, fluid dynamics, and advanced game mechanics (e.g., dynamic heatmaps, fog of war, or chemical reactions).
-
-### 🚀 Key Features & Technologies
-
-*   **Sequential Baseline (`diffusion_seq.cpp`):** A single-threaded implementation of a 9-point stencil averaging filter, establishing a baseline for accuracy and performance metrics.
-*   **Shared Memory Parallelization (`main_openmp.cpp`):** Optimized execution across multi-core CPUs using **OpenMP**. Implements `pragma omp parallel for` with dynamic workload scheduling to significantly reduce frame computation time.
-*   **Distributed Memory Parallelization (`main_mpi.cpp`):** Highly scalable execution using **MPI (Message Passing Interface)**. The grid space is horizontally partitioned among multiple processes. Handles critical inter-process communication (Halo exchange via `MPI_Sendrecv`) and gathers final frames back to the root process (`MPI_Gatherv`).
-*   **Visual Output:** Directly generates raw `.ppm` image files at configurable intervals to visualize the diffusion process over thousands of simulation steps.
-*   **Performance Tracking:** Automated benchmarking and CSV logging to compare execution times across Sequential, OpenMP, and MPI implementations.
-
-### 🛠️ Build & Run
-
-**Requirements:**
-*   C++17 Compiler (g++)
-*   OpenMP support (`-fopenmp`)
-*   MPI implementation (e.g., OpenMPI or MPICH)
-
-**Compilation:**
-```bash
-# Sequential
-g++ -O3 -std=c++17 diffusion_seq.cpp -o seq_diff
-
-# OpenMP
-g++ -O3 -fopenmp -std=c++17 main_openmp.cpp -o omp_diff
-
-# MPI
-mpicxx -O3 -std=c++17 main_mpi.cpp -o mpi_diff
-```
-Execution Example:
-# Run MPI with 4 processes, 1000x1000 grid, 5000 steps
-mpirun -np 4 ./mpi_diff --w 1000 --h 1000 --steps 5000 --save_every 100
+C++ parallel-computing project implementing the same 2D color diffusion workload using sequential execution, OpenMP, MPI and CUDA.
+The project was developed as a university team project to compare different parallelization models and their performance characteristics.
+## Simulation
+The simulation operates on a 2D RGB grid.
+Each iteration applies a 3×3 stencil to every cell, averaging the values of the surrounding neighborhood. Repeating this operation produces a diffusion-like spreading effect from several initial color sources.
+The implementations use consistent clamped boundary handling to make performance comparisons more meaningful.
+## Implementations
+### Sequential
+Single-threaded C++ implementation used as the performance baseline.
+### OpenMP
+Shared-memory parallel implementation using OpenMP.
+Rows of the grid are processed in parallel using a static work schedule.
+### MPI
+Distributed-memory implementation that partitions the grid into horizontal regions.
+Neighboring processes exchange halo rows using MPI_Sendrecv, while MPI_Gatherv is used when full output frames need to be reconstructed.
+### CUDA
+GPU implementation using CUDA and shared-memory tiling.
+The CUDA portion was developed collaboratively as part of the team project.
+### Benchmarking
+The repository includes tooling for comparing execution time across:
+- sequential execution
+- multiple OpenMP thread counts
+- multiple MPI process counts
+- CUDA execution
+Benchmark runs disable frame generation to reduce file-I/O influence on timing results.
+Generated results can be processed with the included Python scripts to create comparison charts.
+### Visualization
+Simulation frames can optionally be exported as PPM images.
+A Python utility converts generated frames into animated GIFs for visual inspection of the diffusion process.
+### Tech Stack
+- C++17
+- OpenMP
+- MPI
+- CUDA
+- CMake
+- Python
+- Pandas
+- Matplotlib
+- Pillow
+### Project Structure
+src/seq — sequential baseline
+src/openmp — OpenMP implementation
+src/mpi — MPI implementation
+src/cuda — CUDA implementation and benchmark tooling
+### Build
+The project uses CMake.
+Typical workflow:
+cmake -S . -B build
+cmake --build build --config Release
+MPI and OpenMP are required.
+The CUDA target is built only when a compatible CUDA Toolkit installation is detected.
+### Example
+Example MPI execution:
+mpiexec -n 4 mpi_exec --w 1000 --h 1000 --steps 5000 --save_every 0
+### Project Status
+This repository is preserved as a parallel-computing and performance-analysis portfolio project.
+It demonstrates the use of shared-memory, distributed-memory and GPU parallelization approaches on the same grid-based workload.

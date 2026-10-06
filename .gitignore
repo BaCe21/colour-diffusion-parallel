@@ -1,0 +1,56 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# Visual Studio / MSVC
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.pdb
+*.obj
+*.ilk
+*.idb
+*.tlog
+*.lastbuildstate
+
+# Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Generated simulation frames
+frames/
+frames_*/
+**/frames/
+**/frames_*/
+
+# Generated benchmark data
+diffusion_*.csv
+**/diffusion_*.csv
+
+# Generated plots and animations
+raport_wykresy/
+*.gif
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

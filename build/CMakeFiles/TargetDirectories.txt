@@ -1,5 +1,0 @@
-D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/openmp_exec.dir
-D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/mpi_exec.dir
-D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/cuda_exec.dir
-D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/ALL_BUILD.dir
-D:/Format Files 30.03.2024/studia/pk/PRIR/colour-diffusion-parallel/build/CMakeFiles/ZERO_CHECK.dir

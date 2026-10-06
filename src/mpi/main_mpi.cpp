@@ -160,13 +160,49 @@ int main(int argc, char** argv) {
                 &grid_curr[(my_rows + 1) * W], W * 3, MPI_FLOAT, bot_neighbor, 0,
                 MPI_COMM_WORLD, MPI_STATUS_IGNORE
             );
+                    if (rank == 0)
+                    {
+                std::copy(
+                    grid_curr.begin() + W,
+                    grid_curr.begin() + 2 * W,
+                    grid_curr.begin()
+                        );
+                    }
 
+                    if (rank == size - 1)
+                    {
+                std::copy(
+                    grid_curr.begin() + my_rows * W,
+                    grid_curr.begin() + (my_rows + 1) * W,
+                    grid_curr.begin() + (my_rows + 1) * W
+                        );
+                    }
             MPI_Sendrecv(
                 &grid_curr[my_rows * W], W * 3, MPI_FLOAT, bot_neighbor, 1,
                 &grid_curr[0 * W], W * 3, MPI_FLOAT, top_neighbor, 1,
                 MPI_COMM_WORLD, MPI_STATUS_IGNORE
             );
+                if (rank == 0)
+                {
+                    for (int x = 0; x < W; ++x)
+                    {
+                        grid_curr[x] =
+                            grid_curr[W + x];
+                    }
+                }
 
+                if (rank == size - 1)
+                {
+                    for (int x = 0; x < W; ++x)
+                    {
+                        grid_curr[
+                            (my_rows + 1) * W + x
+                        ] =
+                            grid_curr[
+                                my_rows * W + x
+                            ];
+                    }
+                }
             // 2. Obliczenia
             for (int y = 1; y <= my_rows; ++y) {
                 for (int x = 0; x < W; ++x) {

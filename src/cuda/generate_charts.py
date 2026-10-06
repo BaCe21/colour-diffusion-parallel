@@ -73,14 +73,14 @@ def main():
     # A) Zmienne kroki (Fixed Grid)
     for t in THREADS_OMP:
         for s in STEPS_LIST:
-            cmd = [EXE_OMP, "--w", str(FIXED_GRID), "--h", str(FIXED_GRID), "--steps", str(s), "--threads", str(t), "--save_every", "999999", "--repeat", "1"]
+            cmd = [EXE_OMP, "--w", str(FIXED_GRID), "--h", str(FIXED_GRID), "--steps", str(s), "--threads", str(t), "--save_every", "0", "--repeat", "1"]
             t_sec = run_command(cmd)
             results.append({"Tech": "OpenMP", "Threads": t, "Grid": FIXED_GRID, "Steps": s, "Time": t_sec, "Type": "Steps_Scaling"})
 
     # B) Zmienna siatka (Fixed Steps)
     for t in THREADS_OMP:
         for g in GRID_SIZES:
-            cmd = [EXE_OMP, "--w", str(g), "--h", str(g), "--steps", str(FIXED_STEPS), "--threads", str(t), "--save_every", "999999", "--repeat", "1"]
+            cmd = [EXE_OMP, "--w", str(g), "--h", str(g), "--steps", str(FIXED_STEPS), "--threads", str(t), "--save_every", "0", "--repeat", "1"]
             t_sec = run_command(cmd)
             results.append({"Tech": "OpenMP", "Threads": t, "Grid": g, "Steps": FIXED_STEPS, "Time": t_sec, "Type": "Grid_Scaling"})
 
@@ -92,14 +92,14 @@ def main():
     for r in RANKS_MPI:
         for s in STEPS_LIST:
             # mpiexec -n <ranks> main_mpi.exe ...
-            cmd = ["mpiexec", "-n", str(r), EXE_MPI, "--w", str(FIXED_GRID), "--h", str(FIXED_GRID), "--steps", str(s), "--save_every", "999999", "--repeat", "1"]
+            cmd = ["mpiexec", "-n", str(r), EXE_MPI, "--w", str(FIXED_GRID), "--h", str(FIXED_GRID), "--steps", str(s), "--save_every", "0", "--repeat", "1"]
             t_sec = run_command(cmd)
             results.append({"Tech": "MPI", "Threads": r, "Grid": FIXED_GRID, "Steps": s, "Time": t_sec, "Type": "Steps_Scaling"})
 
     # B) Zmienna siatka (Fixed Steps)
     for r in RANKS_MPI:
         for g in GRID_SIZES:
-            cmd = ["mpiexec", "-n", str(r), EXE_MPI, "--w", str(g), "--h", str(g), "--steps", str(FIXED_STEPS), "--save_every", "999999", "--repeat", "1"]
+            cmd = ["mpiexec", "-n", str(r), EXE_MPI, "--w", str(g), "--h", str(g), "--steps", str(FIXED_STEPS), "--save_every", "0", "--repeat", "1"]
             t_sec = run_command(cmd)
             results.append({"Tech": "MPI", "Threads": r, "Grid": g, "Steps": FIXED_STEPS, "Time": t_sec, "Type": "Grid_Scaling"})
 
@@ -109,14 +109,14 @@ def main():
     
     # A) Zmienne kroki
     for s in STEPS_LIST:
-        cmd = [EXE_SEQ, "--w", str(FIXED_GRID), "--h", str(FIXED_GRID), "--steps", str(s), "--save_every", "999999", "--repeat", "1"]
+        cmd = [EXE_SEQ, "--w", str(FIXED_GRID), "--h", str(FIXED_GRID), "--steps", str(s), "--save_every", "0", "--repeat", "1"]
         t_sec = run_command(cmd)
         results.append({"Tech": "Sequential", "Threads": 1, "Grid": FIXED_GRID, "Steps": s, "Time": t_sec, "Type": "Steps_Scaling"})
 
     # B) Zmienna siatka
     for g in GRID_SIZES:
         # Uwaga: dla duzej siatki seq jest bardzo wolny, mozesz tu zmniejszyc steps jesli test trwa za dlugo
-        cmd = [EXE_SEQ, "--w", str(g), "--h", str(g), "--steps", str(FIXED_STEPS), "--save_every", "999999", "--repeat", "1"]
+        cmd = [EXE_SEQ, "--w", str(g), "--h", str(g), "--steps", str(FIXED_STEPS), "--save_every", "0", "--repeat", "1"]
         t_sec = run_command(cmd)
         results.append({"Tech": "Sequential", "Threads": 1, "Grid": g, "Steps": FIXED_STEPS, "Time": t_sec, "Type": "Grid_Scaling"})
 
@@ -126,13 +126,13 @@ def main():
     
     # A) Zmienne kroki
     for s in STEPS_LIST:
-        cmd = [EXE_CUDA, "--w", str(FIXED_GRID), "--h", str(FIXED_GRID), "--steps", str(s), "--tile", "32", "--save_every", "999999", "--repeat", "1"]
+        cmd = [EXE_CUDA, "--w", str(FIXED_GRID), "--h", str(FIXED_GRID), "--steps", str(s), "--tile", "32", "--save_every", "0", "--repeat", "1"]
         t_sec = run_command(cmd)
         results.append({"Tech": "CUDA", "Threads": "GPU", "Grid": FIXED_GRID, "Steps": s, "Time": t_sec, "Type": "Steps_Scaling"})
 
     # B) Zmienna siatka
     for g in GRID_SIZES:
-        cmd = [EXE_CUDA, "--w", str(g), "--h", str(g), "--steps", str(FIXED_STEPS), "--tile", "32", "--save_every", "999999", "--repeat", "1"]
+        cmd = [EXE_CUDA, "--w", str(g), "--h", str(g), "--steps", str(FIXED_STEPS), "--tile", "32", "--save_every", "0", "--repeat", "1"]
         t_sec = run_command(cmd)
         results.append({"Tech": "CUDA", "Threads": "GPU", "Grid": g, "Steps": FIXED_STEPS, "Time": t_sec, "Type": "Grid_Scaling"})
 

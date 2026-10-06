@@ -35,8 +35,23 @@ target_include_directories(mpi_exec PRIVATE src/common)
 target_link_libraries(mpi_exec PRIVATE MPI::MPI_CXX)
 
 if (HAVE_CUDA)
-  add_executable(cuda_exec src/cuda/main_cuda.cu)
-  set_target_properties(cuda_exec PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-  target_include_directories(cuda_exec PRIVATE src/common)
-  target_link_libraries(cuda_exec PUBLIC CUDA::cudart)
+  add_executable(cuda_exec src/cuda/diffusion_cuda.cu)
+
+  set_target_properties(
+    cuda_exec
+    PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+  )
+
+  target_include_directories(
+    cuda_exec
+    PRIVATE
+    src/common
+  )
+
+  target_link_libraries(
+    cuda_exec
+    PRIVATE
+    CUDA::cudart
+  )
 endif()

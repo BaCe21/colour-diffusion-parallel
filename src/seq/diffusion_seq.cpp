@@ -12,32 +12,56 @@
 
 struct float3f { float x, y, z; };
 
-float3f avg_stencil_9(const float3f* data, int width, int height, int x, int y) {
+inline int clamp_i(int value, int max_value)
+{
+    if (value < 0)
+        return 0;
+
+    if (value >= max_value)
+        return max_value - 1;
+
+    return value;
+}
+
+float3f avg_stencil_9(
+    const float3f* data,
+    int width,
+    int height,
+    int x,
+    int y)
+{
     float3f sum = { 0.f, 0.f, 0.f };
-    int count = 0;
 
-    for (int dy = -1; dy <= 1; ++dy) {
-        for (int dx = -1; dx <= 1; ++dx) {
-            int nx = x + dx;
-            int ny = y + dy;
+    for (int dy = -1; dy <= 1; ++dy)
+    {
+        for (int dx = -1; dx <= 1; ++dx)
+        {
+            int nx = clamp_i(
+                x + dx,
+                width
+            );
 
-            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                float3f v = data[ny * width + nx];
-                sum.x += v.x;
-                sum.y += v.y;
-                sum.z += v.z;
-                count++;
-            }
+            int ny = clamp_i(
+                y + dy,
+                height
+            );
+
+            const float3f& value =
+                data[ny * width + nx];
+
+            sum.x += value.x;
+            sum.y += value.y;
+            sum.z += value.z;
         }
     }
 
-    if (count > 0) {
-        sum.x /= count;
-        sum.y /= count;
-        sum.z /= count;
-    }
+    constexpr float scale = 1.0f / 9.0f;
 
-    return sum;
+    return {
+        sum.x * scale,
+        sum.y * scale,
+        sum.z * scale
+    };
 }
 
 void place_sources(std::vector<float3f>& buf, int W, int H) {
